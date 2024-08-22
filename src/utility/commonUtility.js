@@ -1,12 +1,16 @@
 export function removeAllPreceedingCurlyBracesFromTextNode(textContent, searchWord) {
-  const textFromRemovedSearchedWord = textContent.replace(searchWord, '');
   const selection = window.getSelection();
   const range = selection.getRangeAt(0);
-  let afterIndexPos = textFromRemovedSearchedWord.lastIndexOf("{");
-  let startIndex = textFromRemovedSearchedWord.lastIndexOf("{");
+  let textFromRemovedSearchedWord = textContent
+  if (searchWord !== null) {
+    textFromRemovedSearchedWord = textContent.slice(0, range.startOffset - searchWord?.length) + textContent.slice(range.startOffset)
+  }
+  const splitedStr = textContent.slice(0, range.startOffset);
+  const lastIndexOfBrace = splitedStr.lastIndexOf("{");
+  let startIndex = splitedStr.lastIndexOf("{");
   while (startIndex >= 0 && textFromRemovedSearchedWord[startIndex] === '{') startIndex--;
   const textBefore = textFromRemovedSearchedWord.substring(0, startIndex + 1);
-  const textAfter = textFromRemovedSearchedWord.substring(afterIndexPos + 1);
+  const textAfter = textFromRemovedSearchedWord.substring(lastIndexOfBrace + 1);
   return { textBefore, textAfter }
 }
 
@@ -33,7 +37,8 @@ export function getTextAfterLastOpenCurlyBrace() {
   const selection = window.getSelection();
   const range = selection.getRangeAt(0);
   const currentNode = selection.anchorNode;
-  const lastOpenBraceIndex = currentNode.textContent.lastIndexOf('{');
+  const splitedStr = currentNode.wholeText.slice(0, range.startOffset);
+  const lastOpenBraceIndex = splitedStr.lastIndexOf("{");
   const text = currentNode.textContent.slice(lastOpenBraceIndex + 1, range.startOffset);
   if (lastOpenBraceIndex !== -1) return text
   return null;
@@ -53,7 +58,7 @@ export function filterSuggestions(searchWord, suggestions) {
       filteredSuggestions[key] = suggestions[key];
     }
   }
-  if (Object.keys(filteredSuggestions).length === 0) return suggestions;
+  if (Object.keys(filteredSuggestions).length === 0) return {};
   return filteredSuggestions;
 }
 
@@ -69,29 +74,7 @@ export function createNewHTMLForTooltip(suggestions, variableKey) {
   )
 }
 
-// function checkIfVariableBlockisFormatted() {
-//   const selection = window.getSelection();
-//   const currentNode = selection.anchorNode;
-//   const parentNode = currentNode.parentNode;
-//   const variableBlockText = currentNode.textContent;
-//   if (!variableBlockText.startsWith('{{') || !variableBlockText.endsWith('}}')) {
-//     parentNode.removeAttribute('variable-block');
-//     parentNode.setAttribute('text-block', 'true');
-//   }
-// }
-
-// const handleVariableBlockConditions = (e) => {
-//   const selection = window.getSelection();
-//   const range = selection.getRangeAt(0);
-//   const currentNode = selection.anchorNode;
-//   const parentNode = currentNode.parentNode;
-//   const editableDivNode = parentNode.parentNode;
-//   if (range.endOffset === currentNode.textContent.length && e.nativeEvent.inputType !== 'deleteContentBackward' && e.nativeEvent.inputType !== 'deleteContentForward') {
-//     const textElement = createNewTextNode();
-//     textElement.innerText = currentNode.textContent[currentNode.textContent.length - 1];
-//     currentNode.parentNode.innerText = currentNode.textContent.slice(0, currentNode.textContent.length - 1);
-//     editableDivNode.insertBefore(textElement, parentNode.nextSibling);
-//     range.setStart(textElement, textElement.textContent.length);
-//     range.collapse(false);
-//   }
-// }
+export function isEncodedWithCurlyBraces(str) {
+  const regex = /^\{\{.*\}\}$/;
+  return regex.test(str);
+}

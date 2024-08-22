@@ -24,3 +24,7 @@
         background-color: rgba(128, 128, 128, 0.2);
     }
 }
+.__main__suggestion__container__{
+    display: flex;
+    justify-content: center;
+}

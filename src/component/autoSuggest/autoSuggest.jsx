@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getLeftCharacterBesideCaret, getTextAfterLastOpenCurlyBrace, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
+import { filterSuggestions, getLeftCharacterBesideCaret, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -9,6 +9,7 @@ import './autoSuggest.css';
 export default function AutoSuggest({ suggestions }) {
 
     const contentEditableDivRef = useRef();
+    const showVariableValueTimeoutRef = useRef(null);
 
     const [caretPosition, setCaretPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipPosition, setTooltipPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
@@ -16,12 +17,14 @@ export default function AutoSuggest({ suggestions }) {
     const [showTooltip, setShowTooltip] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions);
-    const [searchWord, setSearchWord] = useState(suggestions);
+    const [searchWord, setSearchWord] = useState(null);
+    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
     useEffect(() => {
         const handleEditableDivBlur = () => {
             setShowSuggestions(false);
             setShowTooltip(false);
+            setSuggestionIndex(0);
         }
         const editableDiv = contentEditableDivRef.current;
         if (editableDiv) editableDiv.addEventListener('blur', handleEditableDivBlur);
@@ -38,10 +41,15 @@ export default function AutoSuggest({ suggestions }) {
         const rect = node.getBoundingClientRect();
         setTooltipVariableDetails(suggestions[variableKey]);
         setTooltipPosition(rect);
-        setShowTooltip(true);
+        showVariableValueTimeoutRef.current = setTimeout(() => {
+            setShowTooltip(true);
+            setShowSuggestions(false);
+            setSuggestionIndex(0);
+        }, 500);
     }, []);
 
     const handleVariableSpanDownEvent = useCallback(() => {
+        clearTimeout(showVariableValueTimeoutRef.current);
         setShowTooltip(false);
     }, []);
 
@@ -62,7 +70,8 @@ export default function AutoSuggest({ suggestions }) {
         });
     }, [handleVariableSpanHoverEvent, handleVariableSpanDownEvent]);
 
-    function insertSuggestion(event) {
+    function insertSuggestion(suggestionText) {
+        debugger
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const currentTextNode = selection.anchorNode;
@@ -72,19 +81,21 @@ export default function AutoSuggest({ suggestions }) {
         const textElementBefore = createNewTextNode();
         const variableElement = createNewVariableNode();
         const textElementAfter = createNewTextNode();
-        variableElement.innerText = `{{${event.target.innerText}}}`;
+        variableElement.innerText = `{{${suggestionText}}}`;
         textElementBefore.innerText = textBefore;
         textElementAfter.innerText = textAfter;
         if (textBefore) editableDivNode.insertBefore(textElementBefore, spanNode)
         editableDivNode.insertBefore(variableElement, spanNode)
         if (textAfter) editableDivNode.insertBefore(textElementAfter, spanNode)
         editableDivNode.removeChild(spanNode);
-        range.setStart(variableElement.firstChild, variableElement.firstChild.length);
+        range.setStartAfter(variableElement, 0);
+        range.setEndAfter(variableElement, variableElement.textContent.length);
         selection.removeAllRanges();
+        setShowSuggestions(false);
+        setSuggestionIndex(0);
+        addEventListenersToVariableSpan();
         range.collapse(false);
         selection.addRange(range);
-        setShowSuggestions(false);
-        addEventListenersToVariableSpan();
     }
 
     function createFirstNode(content) {
@@ -102,18 +113,83 @@ export default function AutoSuggest({ suggestions }) {
 
     const handleContentChange = (event) => {
         const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
         const currentNode = selection.anchorNode;
+        const parentNode = currentNode.parentNode;
+        const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
         if (content.length === 1) return createFirstNode(content);
         if (currentNode.parentNode.getAttribute('text-block')) {
             const searchWord = getTextAfterLastOpenCurlyBrace();
             if (searchWord) {
-                setShowSuggestions(true);
                 setShowTooltip(false);
                 setSearchWord(searchWord);
+                const caretPosition = getCaretPosition();
+                setCaretPosition(caretPosition);
+                setShowSuggestions(true);
+            }
+            else {
+                setSearchWord(null);
             }
             const filteredSuggestions = filterSuggestions(searchWord, suggestions);
             setFilteredSuggestions(filteredSuggestions);
+        }
+        if (parentNode.getAttribute('variable-block')) {
+            if (isEncodedWithCurlyBraces(currentNode.textContent.slice(0, -1))) {
+                const textElement = createNewTextNode();
+                const variableElement = createNewVariableNode();
+                textElement.innerText = currentNode.textContent[currentNode.textContent.length - 1];
+                variableElement.innerText = currentNode.textContent.slice(0, -1);
+                editableDivNode.insertBefore(variableElement, parentNode);
+                editableDivNode.insertBefore(textElement, parentNode);
+                editableDivNode.removeChild(parentNode)
+                range.setStart(textElement, textElement.textContent.length);
+                selection.removeAllRanges();
+                range.collapse(false);
+                selection.addRange(range);
+            }
+        }
+        if (parentNode.getAttribute('variable-block')) {
+            if (isEncodedWithCurlyBraces(currentNode.textContent.slice(1))) {
+                const textElement = createNewTextNode();
+                const variableElement = createNewVariableNode();
+                textElement.innerText = currentNode.textContent[0];
+                variableElement.innerText = currentNode.textContent.slice(1);
+                editableDivNode.insertBefore(textElement, parentNode);
+                editableDivNode.insertBefore(variableElement, parentNode);
+                editableDivNode.removeChild(parentNode)
+                range.setStart(textElement, textElement.textContent.length);
+                selection.removeAllRanges();
+                range.collapse(true);
+                selection.addRange(range);
+            }
+        }
+
+        Array.from(editableDivNode.childNodes).forEach((span) => {
+            if (!span?.getAttribute('variable-block')) return;
+            if (isEncodedWithCurlyBraces(span.textContent)) return;
+            span.setAttribute('text-block', true);
+            span.removeAttribute('variable-block')
+        })
+    }
+
+    function arrowUpPress(event) {
+        event.preventDefault();
+        if (suggestionIndex === 0) return setSuggestionIndex(Object.keys(filteredSuggestions).length - 1);
+        setSuggestionIndex((prev) => prev - 1);
+
+    }
+
+    function arrowDownPress(event) {
+        event.preventDefault();
+        if (suggestionIndex === Object.keys(filteredSuggestions).length - 1) return setSuggestionIndex(0);
+        setSuggestionIndex((prev) => prev + 1);
+    }
+
+    function enterPress(event) {
+        event.preventDefault();
+        if (suggestionIndex > -1 && showSuggestions) {
+            insertSuggestion(Object.keys(filteredSuggestions)[suggestionIndex])
         }
     }
 
@@ -130,20 +206,21 @@ export default function AutoSuggest({ suggestions }) {
             setShowTooltip(false);
         }
         else {
-            setShowSuggestions(false)
+            setShowSuggestions(false);
+            setSuggestionIndex(0);
         }
 
-        if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
-            switch (range.startOffset) {
-                case 1:
-                case 2:
-                case currentNode.wholeText.length - 1:
-                case currentNode.wholeText.length:
-                    parentNode.removeAttribute('variable-block');
-                    parentNode.setAttribute('text-block', 'true');
-                    removeAllEventListeners();
-            }
-        }
+        // if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
+        //     switch (range.startOffset) {
+        //         case 1:
+        //         case 2:
+        //         case currentNode.wholeText.length - 1:
+        //         case currentNode.wholeText.length:
+        //             parentNode.removeAttribute('variable-block');
+        //             parentNode.setAttribute('text-block', 'true');
+        //             removeAllEventListeners();
+        //     }
+        // }
 
         if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
@@ -151,6 +228,10 @@ export default function AutoSuggest({ suggestions }) {
             setShowSuggestions(true);
             setShowTooltip(false);
         }
+
+        if (event.key === 'ArrowUp') arrowUpPress(event);
+        if (event.key === 'ArrowDown') arrowDownPress(event);
+        if (event.key === 'Enter') enterPress(event);
     }
 
     const handleKeyUp = (event) => {
@@ -166,23 +247,23 @@ export default function AutoSuggest({ suggestions }) {
             setShowTooltip(false);
         }
 
-        if (event.key.match(/^[\x20-\x7E]$/) && range.startOffset === currentNode.textContent.length && parentNode.getAttribute('variable-block')) {
-            const textElement = createNewTextNode();
-            textElement.innerText = event.key;
-            currentNode.parentNode.innerText = currentNode.textContent.slice(0, currentNode.textContent.length - 1);
-            parentNode.parentNode.insertBefore(textElement, parentNode.nextSibling);
-            range.setStart(textElement, textElement.textContent.length);
-            range.collapse(false);
-        }
+        // if (event.key.match(/^[\x20-\x7E]$/) && range.startOffset === currentNode.textContent.length && parentNode.getAttribute('variable-block')) {
+        //     const textElement = createNewTextNode();
+        //     textElement.innerText = event.key;
+        //     currentNode.parentNode.innerText = currentNode.textContent.slice(0, currentNode.textContent.length - 1);
+        //     parentNode.parentNode.insertBefore(textElement, parentNode.nextSibling);
+        //     range.setStart(textElement, textElement.textContent.length);
+        //     range.collapse(false);
+        // }
 
-        if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
-            const variableBlockText = currentNode.textContent;
-            if (!variableBlockText.startsWith('{{') || !variableBlockText.endsWith('}}')) {
-                parentNode.removeAttribute('variable-block');
-                parentNode.setAttribute('text-block', 'true');
-                removeAllEventListeners();
-            }
-        }
+        // if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
+        //     const variableBlockText = currentNode.textContent;
+        //     if (!variableBlockText.startsWith('{{') || !variableBlockText.endsWith('}}')) {
+        //         parentNode.removeAttribute('variable-block');
+        //         parentNode.setAttribute('text-block', 'true');
+        //         removeAllEventListeners();
+        //     }
+        // }
     }
 
     return (
@@ -203,8 +284,8 @@ export default function AutoSuggest({ suggestions }) {
                     </div>
                 </div>
             </div>
-            {showSuggestions && <SuggestionBox filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />}
-            {/* {showTooltip && <Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />} */}
+            {showSuggestions && <SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />}
+            {showTooltip && <Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />}
         </React.Fragment>
     )
 }
