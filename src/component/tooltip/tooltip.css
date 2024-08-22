@@ -1,0 +1,13 @@
+#__tooltip__ {
+    font-size: 12px;
+    padding: 4px;
+    margin: 4px;
+    border-radius: 4px;
+    position: absolute;
+    max-width: 320px;
+    height: fit-content;
+    word-wrap: break-word;
+    display: block;
+    background-color: #F9F9F9;
+    box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+}

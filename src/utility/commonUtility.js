@@ -1,11 +1,12 @@
-export function removeAllPreceedingCurlyBracesFromTextNode(textContent) {
+export function removeAllPreceedingCurlyBracesFromTextNode(textContent, searchWord) {
+  const textFromRemovedSearchedWord = textContent.replace(searchWord, '');
   const selection = window.getSelection();
   const range = selection.getRangeAt(0);
-  const caretPosition = range.startOffset;
-  let startIndex = caretPosition - 1;
-  while (startIndex >= 0 && textContent[startIndex] === '{') startIndex--;
-  const textBefore = textContent.substring(0, startIndex + 1);
-  const textAfter = textContent.substring(caretPosition);
+  let afterIndexPos = textFromRemovedSearchedWord.lastIndexOf("{");
+  let startIndex = textFromRemovedSearchedWord.lastIndexOf("{");
+  while (startIndex >= 0 && textFromRemovedSearchedWord[startIndex] === '{') startIndex--;
+  const textBefore = textFromRemovedSearchedWord.substring(0, startIndex + 1);
+  const textAfter = textFromRemovedSearchedWord.substring(afterIndexPos + 1);
   return { textBefore, textAfter }
 }
 
@@ -30,10 +31,11 @@ export function getLeftCharacterBesideCaret() {
 
 export function getTextAfterLastOpenCurlyBrace() {
   const selection = window.getSelection();
+  const range = selection.getRangeAt(0);
   const currentNode = selection.anchorNode;
-  const text = currentNode.textContent;
-  const lastOpenBraceIndex = text.lastIndexOf('{');
-  if (lastOpenBraceIndex !== -1) return text.slice(lastOpenBraceIndex + 1);
+  const lastOpenBraceIndex = currentNode.textContent.lastIndexOf('{');
+  const text = currentNode.textContent.slice(lastOpenBraceIndex + 1, range.startOffset);
+  if (lastOpenBraceIndex !== -1) return text
   return null;
 }
 
