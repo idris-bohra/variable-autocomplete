@@ -1,0 +1,26 @@
+.suggestions {
+    position: absolute;
+    font-size: 12px;
+    background-color: white;
+    box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+    z-index: 100;
+
+    .suggestion-item-div {
+        cursor: pointer;
+
+        :hover {
+            background-color: rgba(128, 128, 128, 0.2);
+        }
+    }
+
+    .suggestion-item {
+        color: black;
+        padding: 8px;
+    }
+
+    .saperation-line {
+        height: 1px;
+        width: 100%;
+        background-color: rgba(128, 128, 128, 0.2);
+    }
+}
