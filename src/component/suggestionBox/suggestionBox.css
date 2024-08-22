@@ -1,30 +1,23 @@
 .suggestions {
+    display: flex;
     position: absolute;
     font-size: 12px;
-    background-color: white;
+    background-color: #F9F9F9;
     box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
     z-index: 100;
-
-    .suggestion-item-div {
-        cursor: pointer;
-
-        :hover {
-            background-color: rgba(128, 128, 128, 0.2);
-        }
-    }
-
-    .suggestion-item {
-        color: black;
-        padding: 8px;
-    }
-
-    .saperation-line {
-        height: 1px;
-        width: 100%;
-        background-color: rgba(128, 128, 128, 0.2);
-    }
 }
-.__main__suggestion__container__{
+
+.suggestion-item-div {
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.__main__suggestion__container__ {
+    flex-direction: column;
     display: flex;
-    justify-content: center;
+    border-right: 1px solid rgba(128, 128, 128, 0.2);
+    max-height: 200px;
+    min-height: 200px;
+    min-width: 130px;
+    overflow: scroll;
 }

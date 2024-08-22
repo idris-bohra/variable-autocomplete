@@ -69,9 +69,10 @@
 span[variable-block] {
     background-color: transparent;
     color: orangered;
+    z-index: 1;
 }
 
 span[variable-block]:hover {
-    color: rgba(255, 68, 0, 0.8);
+    color: rgb(255, 153, 0);
     transition: .2s;
 }

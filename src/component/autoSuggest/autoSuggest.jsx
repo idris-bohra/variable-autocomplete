@@ -71,7 +71,6 @@ export default function AutoSuggest({ suggestions }) {
     }, [handleVariableSpanHoverEvent, handleVariableSpanDownEvent]);
 
     function insertSuggestion(suggestionText) {
-        debugger
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const currentTextNode = selection.anchorNode;
@@ -132,6 +131,7 @@ export default function AutoSuggest({ suggestions }) {
                 setSearchWord(null);
             }
             const filteredSuggestions = filterSuggestions(searchWord, suggestions);
+            if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
             setFilteredSuggestions(filteredSuggestions);
         }
         if (parentNode.getAttribute('variable-block')) {
@@ -164,12 +164,12 @@ export default function AutoSuggest({ suggestions }) {
                 selection.addRange(range);
             }
         }
-
         Array.from(editableDivNode.childNodes).forEach((span) => {
             if (!span?.getAttribute('variable-block')) return;
             if (isEncodedWithCurlyBraces(span.textContent)) return;
             span.setAttribute('text-block', true);
-            span.removeAttribute('variable-block')
+            span.removeAttribute('variable-block');
+            removeAllEventListeners();
         })
     }
 
@@ -195,9 +195,7 @@ export default function AutoSuggest({ suggestions }) {
 
     const handleKeyDown = (event) => {
         const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        const currentNode = selection.anchorNode;
-        const parentNode = currentNode.parentNode;
+        const currentNode = selection.anchorNode;;
 
         if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
@@ -224,7 +222,6 @@ export default function AutoSuggest({ suggestions }) {
 
     const handleKeyUp = (event) => {
         const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
         const currentNode = selection.anchorNode;
         const parentNode = currentNode.parentNode;
 

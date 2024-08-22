@@ -4,6 +4,8 @@ import { suggestions } from './enums/suggestions';
 
 export default function App() {
   return (
-    <AutoSuggest suggestions={suggestions} />
+    <div>
+      <AutoSuggest suggestions={suggestions} />
+    </div>
   )
 }
