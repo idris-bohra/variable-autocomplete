@@ -210,18 +210,6 @@ export default function AutoSuggest({ suggestions }) {
             setSuggestionIndex(0);
         }
 
-        // if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
-        //     switch (range.startOffset) {
-        //         case 1:
-        //         case 2:
-        //         case currentNode.wholeText.length - 1:
-        //         case currentNode.wholeText.length:
-        //             parentNode.removeAttribute('variable-block');
-        //             parentNode.setAttribute('text-block', 'true');
-        //             removeAllEventListeners();
-        //     }
-        // }
-
         if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
@@ -247,23 +235,9 @@ export default function AutoSuggest({ suggestions }) {
             setShowTooltip(false);
         }
 
-        // if (event.key.match(/^[\x20-\x7E]$/) && range.startOffset === currentNode.textContent.length && parentNode.getAttribute('variable-block')) {
-        //     const textElement = createNewTextNode();
-        //     textElement.innerText = event.key;
-        //     currentNode.parentNode.innerText = currentNode.textContent.slice(0, currentNode.textContent.length - 1);
-        //     parentNode.parentNode.insertBefore(textElement, parentNode.nextSibling);
-        //     range.setStart(textElement, textElement.textContent.length);
-        //     range.collapse(false);
-        // }
-
-        // if ((event.key === "Backspace" || event.key === "Delete") && parentNode.getAttribute('variable-block')) {
-        //     const variableBlockText = currentNode.textContent;
-        //     if (!variableBlockText.startsWith('{{') || !variableBlockText.endsWith('}}')) {
-        //         parentNode.removeAttribute('variable-block');
-        //         parentNode.setAttribute('text-block', 'true');
-        //         removeAllEventListeners();
-        //     }
-        // }
+        if (!event.key.match(/^[\x20-\x7E]$/) && parentNode.getAttribute('variable-block')) {
+            event.preventDefault();
+        }
     }
 
     return (
