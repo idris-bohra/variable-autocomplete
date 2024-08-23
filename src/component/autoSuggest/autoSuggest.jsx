@@ -92,9 +92,10 @@ export default function AutoSuggest({ suggestions }) {
         selection.removeAllRanges();
         setShowSuggestions(false);
         setSuggestionIndex(0);
-        addEventListenersToVariableSpan();
         range.collapse(false);
         selection.addRange(range);
+        setTimeout(() => contentEditableDivRef.current.focus());
+        addEventListenersToVariableSpan();
     }
 
     function createFirstNode(content) {
@@ -165,7 +166,6 @@ export default function AutoSuggest({ suggestions }) {
             }
         }
         Array.from(editableDivNode.childNodes).forEach((span) => {
-            if (!span?.getAttribute('variable-block')) return;
             if (isEncodedWithCurlyBraces(span.textContent)) return;
             span.setAttribute('text-block', true);
             span.removeAttribute('variable-block');
@@ -174,24 +174,22 @@ export default function AutoSuggest({ suggestions }) {
     }
 
     function arrowUpPress(event) {
-        if(!showSuggestions) return;
+        event.preventDefault();
         if (suggestionIndex === 0) return setSuggestionIndex(Object.keys(filteredSuggestions).length - 1);
         setSuggestionIndex((prev) => prev - 1);
-        event.preventDefault();
     }
 
     function arrowDownPress(event) {
-        if(!showSuggestions) return;
+        event.preventDefault();
         if (suggestionIndex === Object.keys(filteredSuggestions).length - 1) return setSuggestionIndex(0);
         setSuggestionIndex((prev) => prev + 1);
-        event.preventDefault();
     }
 
     function enterPress(event) {
+        event.preventDefault();
         if (suggestionIndex > -1 && showSuggestions) {
             insertSuggestion(Object.keys(filteredSuggestions)[suggestionIndex])
         }
-        event.preventDefault();
     }
 
     const handleKeyDown = (event) => {
@@ -233,14 +231,7 @@ export default function AutoSuggest({ suggestions }) {
                 <div className='__div__init'>
                     <div className='__div__init'>
                         <div className='auto-suggest'>
-                            <div
-                                ref={contentEditableDivRef}
-                                id="__custom-autosuggest-block__"
-                                onKeyDown={handleKeyDown}
-                                onKeyUp={handleKeyUp}
-                                contentEditable={true}
-                                onInput={handleContentChange}>
-                            </div>
+                            <div ref={contentEditableDivRef} id="__custom-autosuggest-block__" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
                         </div>
                     </div>
                 </div>
