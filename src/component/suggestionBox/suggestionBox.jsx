@@ -7,12 +7,15 @@ export default function SuggestionBox(props) {
     const suggestionRefs = useRef([]);
 
     useEffect(() => {
-        if (suggestionRefs.current[props.suggestionIndex]) {
-            suggestionRefs.current[props.suggestionIndex].scrollIntoView({
-                behavior: 'auto',
-            });
-        }
+    if (suggestionRefs.current[props?.suggestionIndex]) {
+        suggestionRefs.current[props?.suggestionIndex].scrollIntoView({
+            behavior: 'smooth', 
+            block: 'nearest', 
+            inline: 'start',
+        });
+    }
     }, [props.suggestionIndex]);
+
 
     const handleSuggestionHoverEvent = (index) => {
         props?.setSuggestionIndex(index)
