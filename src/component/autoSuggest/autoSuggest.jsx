@@ -224,8 +224,6 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
             setFilteredSuggestions(suggestions);
         }
 
-        if (getLeftCharacterBesideCaret() !== '{') setShowSuggestions(false)
-
         if (!event.key.match(/^[\x20-\x7E]$/) && parentNode.getAttribute('variable-block')) {
             event.preventDefault();
         }
