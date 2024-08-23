@@ -1,0 +1,57 @@
+.suggestionValueMainContainer {
+    word-wrap: break-word;
+    margin: 0px 10px;
+    max-height: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    z-index: 2000000;
+}
+
+.suggestionTypeContainer {
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    margin: 10px 0px;
+}
+
+.suggestionType {
+    color: grey;
+    font-weight: 200;
+    font-size: 10px;
+    min-width: 60px;
+}
+
+.suggestionTypeValue {
+    font-weight: 300;
+    font-size: 10px;
+    flex-grow: 1;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.spacing-block {
+    padding: 10px;
+}
+
+.warning-description {
+    font-size: 10px;
+    color: grey;
+    margin-left: 4px;
+    margin-top: 2px;
+}
+
+.warning-title {
+    display: flex;
+    align-items: center;
+    margin-left: 2px;
+    font-size: 14px;
+    font-weight: 500;
+
+    >span{
+        margin-left: 4px;
+    }
+}
