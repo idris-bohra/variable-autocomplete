@@ -182,6 +182,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
             setShowSuggestions(false);
         }
         const filteredSuggestions = filterSuggestions(searchWord, suggestions);
+        setSuggestionIndex(0);
         if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
         setFilteredSuggestions(filteredSuggestions);
     }
