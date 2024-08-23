@@ -10,6 +10,8 @@ export default function SuggestionBox(props) {
         if (suggestionRefs.current[props.suggestionIndex]) {
             suggestionRefs.current[props.suggestionIndex].scrollIntoView({
                 behavior: 'auto',
+                block: 'nearest',
+                inline: 'start',
             });
         }
     }, [props.suggestionIndex]);
