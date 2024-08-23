@@ -6,9 +6,8 @@ import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
 import Tooltip from '../tooltip/tooltip.jsx';
 import './autoSuggest.css';
 
-export default function AutoSuggest({ suggestions }) {
+export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
 
-    const contentEditableDivRef = useRef();
     const showVariableValueTimeoutRef = useRef(null);
 
     const [caretPosition, setCaretPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
