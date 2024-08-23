@@ -174,39 +174,29 @@ export default function AutoSuggest({ suggestions }) {
     }
 
     function arrowUpPress(event) {
-        event.preventDefault();
+        if(!showSuggestions) return;
         if (suggestionIndex === 0) return setSuggestionIndex(Object.keys(filteredSuggestions).length - 1);
         setSuggestionIndex((prev) => prev - 1);
-
+        event.preventDefault();
     }
 
     function arrowDownPress(event) {
-        event.preventDefault();
+        if(!showSuggestions) return;
         if (suggestionIndex === Object.keys(filteredSuggestions).length - 1) return setSuggestionIndex(0);
         setSuggestionIndex((prev) => prev + 1);
+        event.preventDefault();
     }
 
     function enterPress(event) {
-        event.preventDefault();
         if (suggestionIndex > -1 && showSuggestions) {
             insertSuggestion(Object.keys(filteredSuggestions)[suggestionIndex])
         }
+        event.preventDefault();
     }
 
     const handleKeyDown = (event) => {
         const selection = window.getSelection();
         const currentNode = selection.anchorNode;;
-
-        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
-            const caretPosition = getCaretPosition();
-            setCaretPosition(caretPosition);
-            setShowSuggestions(true);
-            setShowTooltip(false);
-        }
-        else {
-            setShowSuggestions(false);
-            setSuggestionIndex(0);
-        }
 
         if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
