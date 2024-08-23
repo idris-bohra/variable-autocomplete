@@ -117,6 +117,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const parentNode = currentNode.parentNode;
         const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
+        if(content.length === 0) return;
         if (content.length === 1) return createFirstNode(content);
         if (currentNode.parentNode.getAttribute('text-block')) {
             const searchWord = getTextAfterLastOpenCurlyBrace();
@@ -195,11 +196,19 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const selection = window.getSelection();
         const currentNode = selection.anchorNode;;
 
-        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
+        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
             setShowSuggestions(true);
             setShowTooltip(false);
+        }
+        else {
+            setShowSuggestions(false);
+        }
+
+        if ((getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
+            setShowSuggestions(true);
+            setFilteredSuggestions(suggestions);
         }
 
         if (event.key === 'ArrowUp') arrowUpPress(event);
@@ -212,11 +221,16 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const currentNode = selection.anchorNode;
         const parentNode = currentNode.parentNode;
 
-        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block')) || (getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
+        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
             setShowSuggestions(true);
             setShowTooltip(false);
+        }
+
+        if ((getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
+            setShowSuggestions(true);
+            setFilteredSuggestions(suggestions);
         }
 
         if (!event.key.match(/^[\x20-\x7E]$/) && parentNode.getAttribute('variable-block')) {
