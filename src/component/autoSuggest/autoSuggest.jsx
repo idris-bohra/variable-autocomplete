@@ -202,9 +202,6 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
             setShowSuggestions(true);
             setShowTooltip(false);
         }
-        else {
-            setShowSuggestions(false);
-        }
 
         if ((getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             setShowSuggestions(true);
