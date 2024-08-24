@@ -5,6 +5,7 @@ import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
 import Tooltip from '../tooltip/tooltip.jsx';
 import './autoSuggest.css';
+import { createPortal } from 'react-dom';
 
 export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
 
@@ -19,18 +20,18 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
-    useEffect(() => {
-        if (!contentEditableDivRef?.current) return;
-        const editableDiv = contentEditableDivRef.current;
-        if (editableDiv) {
-            editableDiv.addEventListener('blur', handleEditableDivBlur);
-        }
-        return () => {
-            if (editableDiv) {
-                editableDiv.removeEventListener('blur', handleEditableDivBlur);
-            }
-        };
-    }, [contentEditableDivRef]);
+    // useEffect(() => {
+    //     if (!contentEditableDivRef?.current) return;
+    //     const editableDiv = contentEditableDivRef.current;
+    //     if (editableDiv) {
+    //         editableDiv.addEventListener('blur', handleEditableDivBlur);
+    //     }
+    //     return () => {
+    //         if (editableDiv) {
+    //             editableDiv.removeEventListener('blur', handleEditableDivBlur);
+    //         }
+    //     };
+    // }, [contentEditableDivRef]);
 
     useEffect(() => {
         if (contentEditableDivRef?.current) {
@@ -241,7 +242,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                     </div>
                 </div>
             </div>
-            {showSuggestions && <SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />}
+            {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
             {showTooltip && <Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />}
         </React.Fragment>
     )
