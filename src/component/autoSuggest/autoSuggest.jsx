@@ -20,19 +20,31 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
     useEffect(() => {
-        const handleEditableDivBlur = () => {
-            setShowSuggestions(false);
-            setShowTooltip(false);
-            setSuggestionIndex(0);
-        }
+        if (!contentEditableDivRef?.current) return;
         const editableDiv = contentEditableDivRef.current;
-        if (editableDiv) editableDiv.addEventListener('blur', handleEditableDivBlur);
-        addEventListenersToVariableSpan();
+        if (editableDiv) {
+            editableDiv.addEventListener('blur', handleEditableDivBlur);
+        }
         return () => {
-            removeAllEventListeners();
-            if (editableDiv) editableDiv.removeEventListener('blur', handleEditableDivBlur);
+            if (editableDiv) {
+                editableDiv.removeEventListener('blur', handleEditableDivBlur);
+            }
         };
-    }, []);
+    }, [contentEditableDivRef]);
+
+    useEffect(() => {
+        if (contentEditableDivRef?.current) {
+            setTimeout(() => {
+                addEventListenersToVariableSpan();
+            }, 100);
+        }
+    }, [contentEditableDivRef?.current?.innerHTML]);
+
+    const handleEditableDivBlur = () => {
+        setShowSuggestions(false);
+        setShowTooltip(false);
+        setSuggestionIndex(0);
+    }
 
     const handleVariableSpanHoverEvent = useCallback((event) => {
         const node = event.target;
@@ -117,24 +129,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const parentNode = currentNode.parentNode;
         const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
-        if(content.length === 0) return;
+        if (content.length === 0) return;
         if (content.length === 1) return createFirstNode(content);
-        if (currentNode.parentNode.getAttribute('text-block')) {
-            const searchWord = getTextAfterLastOpenCurlyBrace();
-            if (searchWord) {
-                setShowTooltip(false);
-                setSearchWord(searchWord);
-                const caretPosition = getCaretPosition();
-                setCaretPosition(caretPosition);
-                setShowSuggestions(true);
-            }
-            else {
-                setSearchWord(null);
-            }
-            const filteredSuggestions = filterSuggestions(searchWord, suggestions);
-            if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
-            setFilteredSuggestions(filteredSuggestions);
-        }
+        if (currentNode.parentNode.getAttribute('text-block')) getSearchWord();
         if (parentNode.getAttribute('variable-block')) {
             if (isEncodedWithCurlyBraces(currentNode.textContent.slice(0, -1))) {
                 const textElement = createNewTextNode();
@@ -149,9 +146,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                 range.collapse(false);
                 selection.addRange(range);
             }
-        }
-        if (parentNode.getAttribute('variable-block')) {
-            if (isEncodedWithCurlyBraces(currentNode.textContent.slice(1))) {
+            else if (isEncodedWithCurlyBraces(currentNode.textContent.slice(1))) {
                 const textElement = createNewTextNode();
                 const variableElement = createNewVariableNode();
                 textElement.innerText = currentNode.textContent[0];
@@ -171,6 +166,25 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
             span.removeAttribute('variable-block');
             removeAllEventListeners();
         })
+    }
+
+    function getSearchWord() {
+        const searchWord = getTextAfterLastOpenCurlyBrace();
+        if (searchWord) {
+            setShowTooltip(false);
+            setSearchWord(searchWord);
+            const caretPosition = getCaretPosition();
+            setCaretPosition(caretPosition);
+            setShowSuggestions(true);
+        }
+        else {
+            setSearchWord(null);
+            setShowSuggestions(false);
+        }
+        const filteredSuggestions = filterSuggestions(searchWord, suggestions);
+        setSuggestionIndex(0);
+        if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
+        setFilteredSuggestions(filteredSuggestions);
     }
 
     function arrowUpPress(event) {
@@ -193,21 +207,6 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     }
 
     const handleKeyDown = (event) => {
-        const selection = window.getSelection();
-        const currentNode = selection.anchorNode;;
-
-        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block'))) {
-            const caretPosition = getCaretPosition();
-            setCaretPosition(caretPosition);
-            setShowSuggestions(true);
-            setShowTooltip(false);
-        }
-
-        if ((getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
-            setShowSuggestions(true);
-            setFilteredSuggestions(suggestions);
-        }
-
         if (event.key === 'ArrowUp') arrowUpPress(event);
         if (event.key === 'ArrowDown') arrowDownPress(event);
         if (event.key === 'Enter') enterPress(event);
@@ -218,14 +217,10 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const currentNode = selection.anchorNode;
         const parentNode = currentNode.parentNode;
 
-        if ((event.key === '{' && currentNode.parentNode.getAttribute('text-block'))) {
+        if ((getLeftCharacterBesideCaret() === '{' || event.key === '{') && currentNode.parentNode.getAttribute('text-block')) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
-            setShowSuggestions(true);
             setShowTooltip(false);
-        }
-
-        if ((getLeftCharacterBesideCaret() === '{' && currentNode.parentNode.getAttribute('text-block'))) {
             setShowSuggestions(true);
             setFilteredSuggestions(suggestions);
         }
