@@ -4,8 +4,8 @@ import { createNewTextNode, createNewVariableNode } from '../../utility/createNe
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
 import Tooltip from '../tooltip/tooltip.jsx';
-import './autoSuggest.css';
 import { createPortal } from 'react-dom';
+import './autoSuggest.css';
 
 export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
 

@@ -32,7 +32,7 @@ export default function SuggestionBox(props) {
     }
 
     return (
-        <div className="suggestions" style={{ top: `${props?.caretPosition.top}px`, left: `${props?.caretPosition.left}px` }}>
+        <div className="__suggestions__container__" style={{ top: `${props?.caretPosition.top}px`, left: `${props?.caretPosition.left}px` }}>
             <div className='__main__suggestion__container__'>
                 {Object.keys(props?.filteredSuggestions).map((suggestion, index) => (
                     <div
