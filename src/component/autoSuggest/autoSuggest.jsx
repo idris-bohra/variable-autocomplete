@@ -20,18 +20,18 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
-    // useEffect(() => {
-    //     if (!contentEditableDivRef?.current) return;
-    //     const editableDiv = contentEditableDivRef.current;
-    //     if (editableDiv) {
-    //         editableDiv.addEventListener('blur', handleEditableDivBlur);
-    //     }
-    //     return () => {
-    //         if (editableDiv) {
-    //             editableDiv.removeEventListener('blur', handleEditableDivBlur);
-    //         }
-    //     };
-    // }, [contentEditableDivRef]);
+    useEffect(() => {
+        if (!contentEditableDivRef?.current) return;
+        const editableDiv = contentEditableDivRef.current;
+        if (editableDiv) {
+            editableDiv.addEventListener('blur', handleEditableDivBlur);
+        }
+        return () => {
+            if (editableDiv) {
+                editableDiv.removeEventListener('blur', handleEditableDivBlur);
+            }
+        };
+    }, [contentEditableDivRef]);
 
     useEffect(() => {
         if (contentEditableDivRef?.current) {
