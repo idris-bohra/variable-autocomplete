@@ -1,4 +1,4 @@
-.suggestions {
+.__suggestions__container__ {
     display: flex;
     position: absolute;
     font-size: 12px;

@@ -4,6 +4,7 @@ import { createNewTextNode, createNewVariableNode } from '../../utility/createNe
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
 import Tooltip from '../tooltip/tooltip.jsx';
+import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
 export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
@@ -241,7 +242,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                     </div>
                 </div>
             </div>
-            {showSuggestions && <SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />}
+            {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
             {showTooltip && <Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />}
         </React.Fragment>
     )

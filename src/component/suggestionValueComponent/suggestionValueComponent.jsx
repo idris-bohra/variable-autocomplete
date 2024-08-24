@@ -1,5 +1,5 @@
 import React from 'react';
-import info from '../../images/info.png'
+import { MdInfoOutline } from "react-icons/md";
 import './suggestionValueComponent.css';
 
 export default function SuggestionValueComponent({ singleSuggestionDetails }) {
@@ -8,7 +8,7 @@ export default function SuggestionValueComponent({ singleSuggestionDetails }) {
             <div className='suggestionValueMainContainer'>
                 <div className='spacing-block'>
                     <div className='warning-title'>
-                        <img width={18} height={18} src={info} alt='unavailable' />
+                        <MdInfoOutline color='red' size={22} />
                         <span>Unresolved Variable</span>
                     </div>
                     <div className='warning-description'>Make sure the variable is in current Environement</div>
