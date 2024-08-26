@@ -237,13 +237,13 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                 <div className='__div__init'>
                     <div className='__div__init'>
                         <div className='auto-suggest'>
-                            <div ref={contentEditableDivRef} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
+                            <div ref={contentEditableDivRef} className="__custom-autosuggest-block__" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
                         </div>
                     </div>
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
-            {showTooltip && createPortal(<Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.getElementById('root'))}
+            {showTooltip && createPortal(<Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.body)}
         </React.Fragment>
     )
 }
