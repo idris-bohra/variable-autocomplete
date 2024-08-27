@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getLeftCharacterBesideCaret, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -8,7 +8,6 @@ import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
 export default function AutoSuggest({ suggestions, contentEditableDivRef, initial }) {
-
     const showVariableValueTimeoutRef = useRef(null);
     const latestSuggestionsRef = useRef(suggestions);
 
@@ -36,7 +35,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     useEffect(() => {
         const editableDiv = contentEditableDivRef?.current;
-        if(!editableDiv) return;
+        if (!editableDiv) return;
         editableDiv.innerHTML = initial;
         addEventListenersToVariableSpan();
     }, [initial]);
