@@ -21,15 +21,11 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
     useEffect(() => {
-        if (!contentEditableDivRef?.current) return;
-        const editableDiv = contentEditableDivRef.current;
-        if (editableDiv) {
-            editableDiv.addEventListener('blur', handleEditableDivBlur);
-        }
+        const editableDiv = contentEditableDivRef?.current;
+        if (!editableDiv) return;
+        editableDiv.addEventListener('blur', handleEditableDivBlur);
         return () => {
-            if (editableDiv) {
-                editableDiv.removeEventListener('blur', handleEditableDivBlur);
-            }
+            editableDiv.removeEventListener('blur', handleEditableDivBlur);
         };
     }, [contentEditableDivRef]);
 
@@ -41,7 +37,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         }
     }, [contentEditableDivRef?.current?.innerHTML]);
 
-    const handleEditableDivBlur = () => {
+    function handleEditableDivBlur() {
         setShowSuggestions(false);
         setShowTooltip(false);
         setSuggestionIndex(0);
@@ -130,7 +126,11 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const parentNode = currentNode.parentNode;
         const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
-        if (content.length === 0) return;
+        if (content.length === 0) {
+            setShowSuggestions(false);
+            setShowTooltip(false);
+            return;
+        }
         if (content.length === 1) return createFirstNode(content);
         if (currentNode.parentNode.getAttribute('text-block')) getSearchWord();
         if (parentNode.getAttribute('variable-block')) {
@@ -218,7 +218,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const currentNode = selection.anchorNode;
         const parentNode = currentNode.parentNode;
 
-        if ((getLeftCharacterBesideCaret() === '{' || event.key === '{') && currentNode.parentNode.getAttribute('text-block')) {
+        if (event.key === '{' && currentNode.parentNode.getAttribute('text-block')) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
             setShowTooltip(false);
@@ -237,13 +237,13 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                 <div className='__div__init'>
                     <div className='__div__init'>
                         <div className='auto-suggest'>
-                            <div ref={contentEditableDivRef} id="__custom-autosuggest-block__" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
+                            <div ref={contentEditableDivRef} className="__custom-autosuggest-block__" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
                         </div>
                     </div>
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
-            {showTooltip && <Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />}
+            {showTooltip && createPortal(<Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.body)}
         </React.Fragment>
     )
 }
