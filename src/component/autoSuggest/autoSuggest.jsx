@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getLeftCharacterBesideCaret, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -7,9 +7,9 @@ import Tooltip from '../tooltip/tooltip.jsx';
 import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
-export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
-
+export default function AutoSuggest({ suggestions, contentEditableDivRef, initial }) {
     const showVariableValueTimeoutRef = useRef(null);
+    const latestSuggestionsRef = useRef(suggestions);
 
     const [caretPosition, setCaretPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipPosition, setTooltipPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
@@ -30,12 +30,15 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     }, [contentEditableDivRef]);
 
     useEffect(() => {
-        if (contentEditableDivRef?.current) {
-            setTimeout(() => {
-                addEventListenersToVariableSpan();
-            }, 100);
-        }
-    }, [contentEditableDivRef?.current?.innerHTML]);
+        latestSuggestionsRef.current = suggestions;
+    }, [suggestions]);
+
+    useEffect(() => {
+        const editableDiv = contentEditableDivRef?.current;
+        if (!editableDiv) return;
+        editableDiv.innerHTML = initial;
+        addEventListenersToVariableSpan();
+    }, [initial]);
 
     function handleEditableDivBlur() {
         setShowSuggestions(false);
@@ -47,7 +50,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
         const node = event.target;
         const variableKey = removeOuterCurlyBraces(node.innerText || node.textContent);
         const rect = node.getBoundingClientRect();
-        setTooltipVariableDetails(suggestions[variableKey]);
+        setTooltipVariableDetails(latestSuggestionsRef.current[variableKey]);
         setTooltipPosition(rect);
         showVariableValueTimeoutRef.current = setTimeout(() => {
             setShowTooltip(true);
@@ -63,7 +66,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
 
     const addEventListenersToVariableSpan = useCallback(() => {
         removeAllEventListeners();
-        const variableBlocks = document.querySelectorAll('span[variable-block="true"]')
+        const editableDiv = contentEditableDivRef.current;
+        if (!editableDiv) return;
+        const variableBlocks = editableDiv.querySelectorAll('span[variable-block="true"]')
         if (variableBlocks.length === 0) return;
         Array.from(variableBlocks).forEach((variableBlock) => {
             variableBlock.addEventListener('mouseenter', handleVariableSpanHoverEvent);
@@ -72,7 +77,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
     }, [handleVariableSpanHoverEvent, handleVariableSpanDownEvent]);
 
     const removeAllEventListeners = useCallback(() => {
-        const allSpan = document.querySelectorAll('span[text-block="true"]');
+        const editableDiv = contentEditableDivRef.current;
+        if (!editableDiv) return;
+        const allSpan = editableDiv.querySelectorAll('span[text-block="true"]');
         Array.from(allSpan).forEach((span) => {
             span.removeEventListener('mouseenter', handleVariableSpanHoverEvent);
         });
@@ -243,7 +250,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
-            {showTooltip && createPortal(<Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.body)}
+            {showTooltip && createPortal(<Tooltip suggestions={suggestions} tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.getElementById('root'))}
         </React.Fragment>
     )
 }
