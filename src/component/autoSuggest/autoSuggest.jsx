@@ -243,7 +243,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef }) {
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
-            {showTooltip && createPortal(<Tooltip tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableDetails} />, document.body)}
+            {showTooltip && createPortal(<Tooltip suggestions={suggestions} tooltipPosition={tooltipPosition} tooltipVariableDetails={tooltipVariableKey} />, document.getElementById('root'))}
         </React.Fragment>
     )
 }
