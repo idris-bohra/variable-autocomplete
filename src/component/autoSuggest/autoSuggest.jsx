@@ -7,16 +7,16 @@ import Tooltip from '../tooltip/tooltip.jsx';
 import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
-export default function AutoSuggest({ suggestions, contentEditableDivRef, initial }) {
+export default function AutoSuggest({ suggestions, contentEditableDivRef, initial, handleValueChange }) {
     const showVariableValueTimeoutRef = useRef(null);
-    const latestSuggestionsRef = useRef(suggestions);
+    const latestSuggestionsRef = useRef(suggestions || {});
 
     const [caretPosition, setCaretPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipPosition, setTooltipPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipVariableDetails, setTooltipVariableDetails] = useState(null);
     const [showTooltip, setShowTooltip] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions);
+    const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions || {});
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -37,6 +37,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const editableDiv = contentEditableDivRef?.current;
         if (!editableDiv) return;
         editableDiv.innerHTML = initial;
+        removeEmptySpans();
         addEventListenersToVariableSpan();
     }, [initial]);
 
@@ -50,7 +51,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const node = event.target;
         const variableKey = removeOuterCurlyBraces(node.innerText || node.textContent);
         const rect = node.getBoundingClientRect();
-        setTooltipVariableDetails(latestSuggestionsRef.current[variableKey]);
+        setTooltipVariableDetails(latestSuggestionsRef?.current?.[variableKey]);
         setTooltipPosition(rect);
         showVariableValueTimeoutRef.current = setTimeout(() => {
             setShowTooltip(true);
@@ -111,6 +112,8 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         selection.addRange(range);
         setTimeout(() => contentEditableDivRef.current.focus());
         addEventListenersToVariableSpan();
+        removeEmptySpans();
+        handleValueChange();
     }
 
     function createFirstNode(content) {
@@ -124,6 +127,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         selection.removeAllRanges();
         range.collapse(false);
         selection.addRange(range);
+        handleValueChange();
     }
 
     const handleContentChange = (event) => {
@@ -174,6 +178,15 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             span.removeAttribute('variable-block');
             removeAllEventListeners();
         })
+        removeEmptySpans();
+        handleValueChange();
+    }
+
+    const removeEmptySpans = () => {
+        const allSpan = contentEditableDivRef.current.querySelectorAll('span');
+        Array.from(allSpan).forEach((span) => {
+            if (span.innerText.length === 0 || span.querySelector('br')) contentEditableDivRef.current.removeChild(span);
+        })
     }
 
     function getSearchWord() {
@@ -189,10 +202,10 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             setSearchWord(null);
             setShowSuggestions(false);
         }
-        const filteredSuggestions = filterSuggestions(searchWord, suggestions);
+        const filteredSuggestions = filterSuggestions(searchWord, suggestions) || {};
         setSuggestionIndex(0);
-        if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
-        setFilteredSuggestions(filteredSuggestions);
+        if (Object.keys(filteredSuggestions || {})?.length === 0) setShowSuggestions(false);
+        setFilteredSuggestions(filteredSuggestions || {});
     }
 
     function arrowUpPress(event) {

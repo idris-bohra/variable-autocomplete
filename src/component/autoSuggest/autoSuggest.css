@@ -69,6 +69,13 @@ span[variable-block] {
     background-color: transparent;
     color: orangered;
     z-index: 1;
+    display: inline-block;
+}
+
+span[text-block] {
+    background-color: transparent;
+    z-index: 1;
+    display: inline-block;
 }
 
 span[variable-block]:hover {
