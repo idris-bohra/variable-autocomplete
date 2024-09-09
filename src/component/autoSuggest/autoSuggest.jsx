@@ -137,12 +137,13 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const parentNode = currentNode.parentNode;
         const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
+        const innerHTML = event.target.innerHTML;
         if (content.length === 0) {
             setShowSuggestions(false);
             setShowTooltip(false);
             return;
         }
-        if (content.length === 1) return createFirstNode(content);
+        if (content.length === 1 && content != '\n') return createFirstNode(content);
         if (currentNode.parentNode.getAttribute('text-block')) getSearchWord();
         if (parentNode.getAttribute('variable-block')) {
             if (isEncodedWithCurlyBraces(currentNode?.textContent?.slice(0, -1))) {
@@ -185,8 +186,14 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
     const removeEmptySpans = () => {
         const allSpan = contentEditableDivRef.current.querySelectorAll('span');
         Array.from(allSpan)?.forEach((span) => {
-            if (span.innerText.length === 0 || span.querySelector('br')) {
-                contentEditableDivRef.current?.removeChild(span);
+            if (span.querySelector('br')) {
+                const brTag = span.querySelector('br');
+                if (brTag.parentNode === span) {
+                    contentEditableDivRef.current.removeChild(span);
+                }
+            }
+            if (span.innerText.length === 0) {
+                contentEditableDivRef.current.removeChild(span);
             }
         })
     }

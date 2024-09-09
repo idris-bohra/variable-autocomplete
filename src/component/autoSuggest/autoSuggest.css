@@ -30,12 +30,17 @@
     width: 100%;
     margin: 4px 10px;
     overflow-x: auto;
+    overflow-y: hidden;
+    position: relative;
 }
 
 .__custom-autosuggest-block__ {
     outline: none;
     height: 100%;
     width: 100%;
+    position: absolute;
+    overflow-x: scroll;
+    overflow-y: hidden;
 }
 
 span[variable-block] {
