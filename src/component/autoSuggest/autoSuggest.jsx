@@ -128,6 +128,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         range.collapse(false);
         selection.addRange(range);
         handleValueChange && handleValueChange();
+        addEventListenersToVariableSpan();
     }
 
     const handleContentChange = (event) => {
@@ -137,7 +138,6 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const parentNode = currentNode.parentNode;
         const editableDivNode = parentNode.parentNode;
         const content = event.target.innerText;
-        const innerHTML = event.target.innerHTML;
         if (content.length === 0) {
             setShowSuggestions(false);
             setShowTooltip(false);
@@ -179,6 +179,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             span.removeAttribute('variable-block');
             removeAllEventListeners();
         })
+        addEventListenersToVariableSpan();
         removeEmptySpans();
         handleValueChange && handleValueChange();
     }
@@ -188,12 +189,12 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         Array.from(allSpan)?.forEach((span) => {
             if (span.querySelector('br')) {
                 const brTag = span.querySelector('br');
-                if (brTag.parentNode === span) {
-                    contentEditableDivRef.current.removeChild(span);
+                if (brTag?.parentNode === span && span.parentNode === contentEditableDivRef.current) {
+                    contentEditableDivRef?.current?.removeChild(span);
                 }
             }
-            if (span.innerText.length === 0) {
-                contentEditableDivRef.current.removeChild(span);
+            if (span.innerText.length === 0 && span.parentNode === contentEditableDivRef.current) {
+                contentEditableDivRef?.current?.removeChild(span);
             }
         })
     }
