@@ -37,9 +37,9 @@ export function getTextAfterLastOpenCurlyBrace() {
   const selection = window.getSelection();
   const range = selection.getRangeAt(0);
   const currentNode = selection.anchorNode;
-  const splitedStr = currentNode.wholeText.slice(0, range.startOffset);
-  const lastOpenBraceIndex = splitedStr.lastIndexOf("{");
-  const text = currentNode.textContent.slice(lastOpenBraceIndex + 1, range.startOffset);
+  const splitedStr = currentNode.wholeText?.slice(0, range.startOffset);
+  const lastOpenBraceIndex = splitedStr?.lastIndexOf("{");
+  const text = currentNode.textContent?.slice(lastOpenBraceIndex + 1, range.startOffset);
   if (lastOpenBraceIndex !== -1) return text
   return null;
 }

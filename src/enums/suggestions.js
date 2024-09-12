@@ -1,237 +1,237 @@
 export const suggestions = {
     "apiKey": {
-        "initial": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
-        "current": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
+        "initialValue": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
+        "currentValue": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
         "scope": "Global"
     },
     "userToken": {
-        "initial": "token12345abcdef",
-        "current": "token67890ghijkl",
+        "initialValue": "token12345abcdef",
+        "currentValue": "token67890ghijkl",
         "scope": "Private"
     },
     "apiUrl": {
-        "initial": "https://api.example.com",
-        "current": "https://api.tech.com",
+        "initialValue": "https://api.example.com",
+        "currentValue": "https://api.tech.com",
         "scope": "Global"
     },
     "username": {
-        "initial": "user_one",
-        "current": "user_two",
+        "initialValue": "user_one",
+        "currentValue": "user_two",
         "scope": "Global"
     },
     "password": {
-        "initial": "pass1234",
-        "current": "securePass5678",
+        "initialValue": "pass1234",
+        "currentValue": "securePass5678",
         "scope": "Private"
     },
     "sessionToken": {
-        "initial": "sdfg6789asdf1234",
-        "current": "qwerty1234uiop5678",
+        "initialValue": "sdfg6789asdf1234",
+        "currentValue": "qwerty1234uiop5678",
         "scope": "Private"
     },
     "refreshToken": {
-        "initial": "refreshToken_abcd1234",
-        "current": "refreshToken_efgh5678",
+        "initialValue": "refreshToken_abcd1234",
+        "currentValue": "refreshToken_efgh5678",
         "scope": "Private"
     },
     "loginUrl": {
-        "initial": "https://login.example.com",
-        "current": "https://login.tech.com",
+        "initialValue": "https://login.example.com",
+        "currentValue": "https://login.tech.com",
         "scope": "Global"
     },
     "clientSecret": {
-        "initial": "secret1234abcd",
-        "current": "secret5678efgh",
+        "initialValue": "secret1234abcd",
+        "currentValue": "secret5678efgh",
         "scope": "Private"
     },
     "accessToken": {
-        "initial": "accessToken1234abcd",
-        "current": "accessToken5678efgh",
+        "initialValue": "accessToken1234abcd",
+        "currentValue": "accessToken5678efgh",
         "scope": "Private"
     },
     "databaseUrl": {
-        "initial": "https://db.example.com",
-        "current": "https://db.tech.com",
+        "initialValue": "https://db.example.com",
+        "currentValue": "https://db.tech.com",
         "scope": "Global"
     },
     "publicKey": {
-        "initial": "publicKey1234abcd",
-        "current": "publicKey5678efgh",
+        "initialValue": "publicKey1234abcd",
+        "currentValue": "publicKey5678efgh",
         "scope": "Global"
     },
     "privateKey": {
-        "initial": "privateKey1234abcd",
-        "current": "privateKey5678efgh",
+        "initialValue": "privateKey1234abcd",
+        "currentValue": "privateKey5678efgh",
         "scope": "Private"
     },
     "hostUrl": {
-        "initial": "https://host.example.com",
-        "current": "https://host.tech.com",
+        "initialValue": "https://host.example.com",
+        "currentValue": "https://host.tech.com",
         "scope": "Global"
     },
     "serverKey": {
-        "initial": "serverKey1234abcd",
-        "current": "serverKey5678efgh",
+        "initialValue": "serverKey1234abcd",
+        "currentValue": "serverKey5678efgh",
         "scope": "Global"
     },
     "emailAddress": {
-        "initial": "user@example.com",
-        "current": "user@tech.com",
+        "initialValue": "user@example.com",
+        "currentValue": "user@tech.com",
         "scope": "Global"
     },
     "contactNumber": {
-        "initial": "1234567890",
-        "current": "0987654321",
+        "initialValue": "1234567890",
+        "currentValue": "0987654321",
         "scope": "Global"
     },
     "appSecret": {
-        "initial": "appSecret1234abcd",
-        "current": "appSecret5678efgh",
+        "initialValue": "appSecret1234abcd",
+        "currentValue": "appSecret5678efgh",
         "scope": "Private"
     },
     "authToken": {
-        "initial": "authToken1234abcd",
-        "current": "authToken5678efgh",
+        "initialValue": "authToken1234abcd",
+        "currentValue": "authToken5678efgh",
         "scope": "Private"
     },
     "redirectUrl": {
-        "initial": "https://redirect.example.com",
-        "current": "https://redirect.tech.com",
+        "initialValue": "https://redirect.example.com",
+        "currentValue": "https://redirect.tech.com",
         "scope": "Global"
     },
     "endpointUrl": {
-        "initial": "https://endpoint.example.com",
-        "current": "https://endpoint.tech.com",
+        "initialValue": "https://endpoint.example.com",
+        "currentValue": "https://endpoint.tech.com",
         "scope": "Global"
     },
     "databaseName": {
-        "initial": "example_db",
-        "current": "tech_db",
+        "initialValue": "example_db",
+        "currentValue": "tech_db",
         "scope": "Global"
     },
     "appUrl": {
-        "initial": "https://app.example.com",
-        "current": "https://app.tech.com",
+        "initialValue": "https://app.example.com",
+        "currentValue": "https://app.tech.com",
         "scope": "Global"
     },
     "serviceKey": {
-        "initial": "serviceKey1234abcd",
-        "current": "serviceKey5678efgh",
+        "initialValue": "serviceKey1234abcd",
+        "currentValue": "serviceKey5678efgh",
         "scope": "Private"
     },
     "proxyUrl": {
-        "initial": "https://proxy.example.com",
-        "current": "https://proxy.tech.com",
+        "initialValue": "https://proxy.example.com",
+        "currentValue": "https://proxy.tech.com",
         "scope": "Global"
     },
     "bucketName": {
-        "initial": "example_bucket",
-        "current": "tech_bucket",
+        "initialValue": "example_bucket",
+        "currentValue": "tech_bucket",
         "scope": "Global"
     },
     "clientId": {
-        "initial": "clientId1234abcd",
-        "current": "clientId5678efgh",
+        "initialValue": "clientId1234abcd",
+        "currentValue": "clientId5678efgh",
         "scope": "Global"
     },
     "userEmail": {
-        "initial": "user@example.com",
-        "current": "admin@tech.com",
+        "initialValue": "user@example.com",
+        "currentValue": "admin@tech.com",
         "scope": "Global"
     },
     "accessTokenUrl": {
-        "initial": "https://token.example.com",
-        "current": "https://token.tech.com",
+        "initialValue": "https://token.example.com",
+        "currentValue": "https://token.tech.com",
         "scope": "Global"
     },
     "refreshTokenUrl": {
-        "initial": "https://refresh.example.com",
-        "current": "https://refresh.tech.com",
+        "initialValue": "https://refresh.example.com",
+        "currentValue": "https://refresh.tech.com",
         "scope": "Global"
     },
     "paymentUrl": {
-        "initial": "https://payment.example.com",
-        "current": "https://payment.tech.com",
+        "initialValue": "https://payment.example.com",
+        "currentValue": "https://payment.tech.com",
         "scope": "Global"
     },
     "currencyCode": {
-        "initial": "USD",
-        "current": "EUR",
+        "initialValue": "USD",
+        "currentValue": "EUR",
         "scope": "Global"
     },
     "countryCode": {
-        "initial": "US",
-        "current": "DE",
+        "initialValue": "US",
+        "currentValue": "DE",
         "scope": "Global"
     },
     "phoneNumber": {
-        "initial": "123-456-7890",
-        "current": "987-654-3210",
+        "initialValue": "123-456-7890",
+        "currentValue": "987-654-3210",
         "scope": "Global"
     },
     "userId": {
-        "initial": "userId1234abcd",
-        "current": "userId5678efgh",
+        "initialValue": "userId1234abcd",
+        "currentValue": "userId5678efgh",
         "scope": "Global"
     },
     "appId": {
-        "initial": "appId1234abcd",
-        "current": "appId5678efgh",
+        "initialValue": "appId1234abcd",
+        "currentValue": "appId5678efgh",
         "scope": "Global"
     },
     "secretKey": {
-        "initial": "secretKey1234abcd",
-        "current": "secretKey5678efgh",
+        "initialValue": "secretKey1234abcd",
+        "currentValue": "secretKey5678efgh",
         "scope": "Private"
     },
     "projectName": {
-        "initial": "example_project",
-        "current": "tech_project",
+        "initialValue": "example_project",
+        "currentValue": "tech_project",
         "scope": "Global"
     },
     "region": {
-        "initial": "us-east-1",
-        "current": "eu-west-1",
+        "initialValue": "us-east-1",
+        "currentValue": "eu-west-1",
         "scope": "Global"
     },
     "zone": {
-        "initial": "zone-a",
-        "current": "zone-b",
+        "initialValue": "zone-a",
+        "currentValue": "zone-b",
         "scope": "Global"
     },
     "sshKey": {
-        "initial": "sshKey1234abcd",
-        "current": "sshKey5678efgh",
+        "initialValue": "sshKey1234abcd",
+        "currentValue": "sshKey5678efgh",
         "scope": "Private"
     },
     "subnetId": {
-        "initial": "subnet1234abcd",
-        "current": "subnet5678efgh",
+        "initialValue": "subnet1234abcd",
+        "currentValue": "subnet5678efgh",
         "scope": "Global"
     },
     "vpcId": {
-        "initial": "vpc1234abcd",
-        "current": "vpc5678efgh",
+        "initialValue": "vpc1234abcd",
+        "currentValue": "vpc5678efgh",
         "scope": "Global"
     },
     "deviceId": {
-        "initial": "deviceId1234abcd",
-        "current": "deviceId5678efgh",
+        "initialValue": "deviceId1234abcd",
+        "currentValue": "deviceId5678efgh",
         "scope": "Global"
     },
     "instanceId": {
-        "initial": "instanceId1234abcd",
-        "current": "instanceId5678efgh",
+        "initialValue": "instanceId1234abcd",
+        "currentValue": "instanceId5678efgh",
         "scope": "Global"
     },
     "serviceName": {
-        "initial": "example_service",
-        "current": "tech_service",
+        "initialValue": "example_service",
+        "currentValue": "tech_service",
         "scope": "Global"
     },
     "securityGroup": {
-        "initial": "sg-1234abcd",
-        "current": "sg-5678efgh",
+        "initialValue": "sg-1234abcd",
+        "currentValue": "sg-5678efgh",
         "scope": "Global"
     }
 };

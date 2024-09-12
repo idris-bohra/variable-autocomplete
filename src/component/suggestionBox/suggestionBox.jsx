@@ -33,22 +33,24 @@ export default function SuggestionBox(props) {
     }
 
     return (
-        <div className="__suggestions__container__" style={{ top: `${props?.caretPosition.top}px`, left: `${props?.caretPosition.left}px` }}>
-            <div className='__main__suggestion__container__'>
-                {Object.keys(props?.filteredSuggestions).map((suggestion, index) => (
-                    <div
-                        key={index}
-                        ref={(element) => appendSuggestionReference(element, index)}
-                        onMouseDown={() => props?.insertSuggestion(suggestion)}
-                        onMouseEnter={() => handleSuggestionHoverEvent(index)}
-                        className='suggestion-item-div'
-                        style={{ backgroundColor: props?.suggestionIndex === index ? "rgba(128, 128, 128, 0.1)" : "transparent" }}
-                    >
-                        {suggestion}
-                    </div>
-                ))}
-            </div>
-            <ShowSuggestionValue />
-        </div>
+        <React.Fragment>
+            {Object.keys(props?.filteredSuggestions || {})?.length > 0 && <div className="__suggestions__container__" style={{ top: `${props?.caretPosition.top}px`, left: `${props?.caretPosition.left}px` }}>
+                <div className='__main__suggestion__container__'>
+                    {Object.keys(props?.filteredSuggestions).map((suggestion, index) => (
+                        <div
+                            key={index}
+                            ref={(element) => appendSuggestionReference(element, index)}
+                            onMouseDown={() => props?.insertSuggestion(suggestion)}
+                            onMouseEnter={() => handleSuggestionHoverEvent(index)}
+                            className='suggestion-item-div'
+                            style={{ backgroundColor: props?.suggestionIndex === index ? "rgba(128, 128, 128, 0.1)" : "transparent" }}
+                        >
+                            {suggestion}
+                        </div>
+                    ))}
+                </div>
+                <ShowSuggestionValue />
+            </div>}
+        </React.Fragment>
     )
 }

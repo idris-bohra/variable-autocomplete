@@ -7,16 +7,16 @@ import Tooltip from '../tooltip/tooltip.jsx';
 import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
-export default function AutoSuggest({ suggestions, contentEditableDivRef, initial }) {
+export default function AutoSuggest({ suggestions, contentEditableDivRef, initial, handleValueChange, disable }) {
     const showVariableValueTimeoutRef = useRef(null);
-    const latestSuggestionsRef = useRef(suggestions);
+    const latestSuggestionsRef = useRef(suggestions || {});
 
     const [caretPosition, setCaretPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipPosition, setTooltipPosition] = useState({ left: 0, right: 0, top: 0, bottom: 0 });
     const [tooltipVariableDetails, setTooltipVariableDetails] = useState(null);
     const [showTooltip, setShowTooltip] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions);
+    const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions || {});
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -37,6 +37,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const editableDiv = contentEditableDivRef?.current;
         if (!editableDiv) return;
         editableDiv.innerHTML = initial;
+        removeEmptySpans();
         addEventListenersToVariableSpan();
     }, [initial]);
 
@@ -50,7 +51,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const node = event.target;
         const variableKey = removeOuterCurlyBraces(node.innerText || node.textContent);
         const rect = node.getBoundingClientRect();
-        setTooltipVariableDetails(latestSuggestionsRef.current[variableKey]);
+        setTooltipVariableDetails(latestSuggestionsRef?.current?.[variableKey]);
         setTooltipPosition(rect);
         showVariableValueTimeoutRef.current = setTimeout(() => {
             setShowTooltip(true);
@@ -70,7 +71,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         if (!editableDiv) return;
         const variableBlocks = editableDiv.querySelectorAll('span[variable-block="true"]')
         if (variableBlocks.length === 0) return;
-        Array.from(variableBlocks).forEach((variableBlock) => {
+        Array.from(variableBlocks)?.forEach((variableBlock) => {
             variableBlock.addEventListener('mouseenter', handleVariableSpanHoverEvent);
             variableBlock.addEventListener('mouseleave', handleVariableSpanDownEvent);
         })
@@ -80,7 +81,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const editableDiv = contentEditableDivRef.current;
         if (!editableDiv) return;
         const allSpan = editableDiv.querySelectorAll('span[text-block="true"]');
-        Array.from(allSpan).forEach((span) => {
+        Array.from(allSpan)?.forEach((span) => {
             span.removeEventListener('mouseenter', handleVariableSpanHoverEvent);
         });
     }, [handleVariableSpanHoverEvent, handleVariableSpanDownEvent]);
@@ -98,10 +99,10 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         variableElement.innerText = `{{${suggestionText}}}`;
         textElementBefore.innerText = textBefore;
         textElementAfter.innerText = textAfter;
-        if (textBefore) editableDivNode.insertBefore(textElementBefore, spanNode)
-        editableDivNode.insertBefore(variableElement, spanNode)
-        if (textAfter) editableDivNode.insertBefore(textElementAfter, spanNode)
-        editableDivNode.removeChild(spanNode);
+        if (textBefore) editableDivNode?.insertBefore(textElementBefore, spanNode)
+        editableDivNode?.insertBefore(variableElement, spanNode)
+        if (textAfter) editableDivNode?.insertBefore(textElementAfter, spanNode)
+        editableDivNode?.removeChild(spanNode);
         range.setStartAfter(variableElement, 0);
         range.setEndAfter(variableElement, variableElement.textContent.length);
         selection.removeAllRanges();
@@ -111,6 +112,8 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         selection.addRange(range);
         setTimeout(() => contentEditableDivRef.current.focus());
         addEventListenersToVariableSpan();
+        removeEmptySpans();
+        handleValueChange && handleValueChange();
     }
 
     function createFirstNode(content) {
@@ -124,6 +127,8 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         selection.removeAllRanges();
         range.collapse(false);
         selection.addRange(range);
+        handleValueChange && handleValueChange();
+        addEventListenersToVariableSpan();
     }
 
     const handleContentChange = (event) => {
@@ -138,41 +143,59 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             setShowTooltip(false);
             return;
         }
-        if (content.length === 1) return createFirstNode(content);
+        if (content.length === 1 && content != '\n') return createFirstNode(content);
         if (currentNode.parentNode.getAttribute('text-block')) getSearchWord();
         if (parentNode.getAttribute('variable-block')) {
-            if (isEncodedWithCurlyBraces(currentNode.textContent.slice(0, -1))) {
+            if (isEncodedWithCurlyBraces(currentNode?.textContent?.slice(0, -1))) {
                 const textElement = createNewTextNode();
                 const variableElement = createNewVariableNode();
                 textElement.innerText = currentNode.textContent[currentNode.textContent.length - 1];
                 variableElement.innerText = currentNode.textContent.slice(0, -1);
-                editableDivNode.insertBefore(variableElement, parentNode);
-                editableDivNode.insertBefore(textElement, parentNode);
-                editableDivNode.removeChild(parentNode)
+                editableDivNode?.insertBefore(variableElement, parentNode);
+                editableDivNode?.insertBefore(textElement, parentNode);
+                editableDivNode?.removeChild(parentNode)
                 range.setStart(textElement, textElement.textContent.length);
                 selection.removeAllRanges();
                 range.collapse(false);
                 selection.addRange(range);
             }
-            else if (isEncodedWithCurlyBraces(currentNode.textContent.slice(1))) {
+            else if (isEncodedWithCurlyBraces(currentNode?.textContent?.slice(1))) {
                 const textElement = createNewTextNode();
                 const variableElement = createNewVariableNode();
                 textElement.innerText = currentNode.textContent[0];
                 variableElement.innerText = currentNode.textContent.slice(1);
-                editableDivNode.insertBefore(textElement, parentNode);
-                editableDivNode.insertBefore(variableElement, parentNode);
-                editableDivNode.removeChild(parentNode)
+                editableDivNode?.insertBefore(textElement, parentNode);
+                editableDivNode?.insertBefore(variableElement, parentNode);
+                editableDivNode?.removeChild(parentNode)
                 range.setStart(textElement, textElement.textContent.length);
                 selection.removeAllRanges();
                 range.collapse(true);
                 selection.addRange(range);
             }
         }
-        Array.from(editableDivNode.childNodes).forEach((span) => {
+        Array.from(editableDivNode.childNodes)?.forEach((span) => {
             if (isEncodedWithCurlyBraces(span.textContent)) return;
             span.setAttribute('text-block', true);
             span.removeAttribute('variable-block');
             removeAllEventListeners();
+        })
+        addEventListenersToVariableSpan();
+        removeEmptySpans();
+        handleValueChange && handleValueChange();
+    }
+
+    const removeEmptySpans = () => {
+        const allSpan = contentEditableDivRef.current.querySelectorAll('span');
+        Array.from(allSpan)?.forEach((span) => {
+            if (span.querySelector('br')) {
+                const brTag = span.querySelector('br');
+                if (brTag?.parentNode === span && span.parentNode === contentEditableDivRef.current) {
+                    contentEditableDivRef?.current?.removeChild(span);
+                }
+            }
+            if (span.innerText.length === 0 && span.parentNode === contentEditableDivRef.current) {
+                contentEditableDivRef?.current?.removeChild(span);
+            }
         })
     }
 
@@ -189,10 +212,10 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             setSearchWord(null);
             setShowSuggestions(false);
         }
-        const filteredSuggestions = filterSuggestions(searchWord, suggestions);
+        const filteredSuggestions = filterSuggestions(searchWord, suggestions) || {};
         setSuggestionIndex(0);
-        if (Object.keys(filteredSuggestions).length === 0) setShowSuggestions(false);
-        setFilteredSuggestions(filteredSuggestions);
+        if (Object.keys(filteredSuggestions || {})?.length === 0) setShowSuggestions(false);
+        setFilteredSuggestions(filteredSuggestions || {});
     }
 
     function arrowUpPress(event) {
@@ -238,15 +261,17 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         }
     }
 
+    const handlePaste = (event) => {
+        event.preventDefault();
+        const text = (event.clipboardData || window.clipboardData).getData('text');
+        document.execCommand('insertText', false, text);
+    };
+
     return (
         <React.Fragment>
-            <div className='main__div'>
-                <div className='__div__init'>
-                    <div className='__div__init'>
-                        <div className='auto-suggest'>
-                            <div ref={contentEditableDivRef} className="__custom-autosuggest-block__" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={true} onInput={handleContentChange}></div>
-                        </div>
-                    </div>
+            <div className={`main__div ${disable && 'disable-div'}`}>
+                <div className='auto-suggest'>
+                    <div ref={contentEditableDivRef} className={`__custom-autosuggest-block__`} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={disable === true ? false : true} onInput={handleContentChange} onPaste={handlePaste}></div>
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
