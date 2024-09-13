@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, extractInnerTextFromHTML } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -131,7 +131,50 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         addEventListenersToVariableSpan();
     }
 
+    const saveCaretPosition = () => {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return null;
+
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(contentEditableDivRef.current);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+
+        return preCaretRange.toString().length;
+    };
+
+    // Restore the caret position
+    const restoreCaretPosition = (savedPosition) => {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        let charCount = 0;
+
+        const traverseNodes = (node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const nextCharCount = charCount + node.length;
+                if (savedPosition <= nextCharCount) {
+                    range.setStart(node, savedPosition - charCount);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    return true;
+                }
+                charCount = nextCharCount;
+            } else {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    if (traverseNodes(node.childNodes[i])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        traverseNodes(contentEditableDivRef.current);
+    };
+
     const handleContentChange = (event) => {
+        const pos = saveCaretPosition();
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const currentNode = selection.anchorNode;
@@ -173,16 +216,51 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
                 selection.addRange(range);
             }
         }
-        Array.from(editableDivNode.childNodes)?.forEach((span) => {
-            if (isEncodedWithCurlyBraces(span.textContent)) return;
-            span.setAttribute('text-block', true);
-            span.removeAttribute('variable-block');
+        Array.from(editableDivNode?.childNodes)?.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                if (!isEncodedWithCurlyBraces(node?.textContent)) {
+                    node.setAttribute('text-block', true);
+                    node.removeAttribute('variable-block');
+                }
+            }
             removeAllEventListeners();
-        })
+        });
+        mergeTextBlockSpans();
+        setDynamicVariables();
+        restoreCaretPosition(pos);
         addEventListenersToVariableSpan();
         removeEmptySpans();
         handleValueChange && handleValueChange();
-    }
+    };
+
+    const mergeTextBlockSpans = () => {
+        const editableDivNode = contentEditableDivRef.current;
+        const spans = Array.from(editableDivNode.querySelectorAll('span'));
+        let newSpans = [];
+        let i = 0;
+        while (i < spans.length) {
+            let currentSpan = spans[i];
+            if (currentSpan.attributes[0]?.name === 'text-block' && currentSpan.getAttribute('text-block')) {
+                let mergedContent = currentSpan.textContent;
+                i++;
+                while (i < spans.length && spans[i].attributes[0]?.name === 'text-block' && spans[i].getAttribute('text-block')) {
+                    mergedContent += spans[i].textContent;
+                    i++; 
+                }
+                let newMergedSpan = document.createElement('span');
+                newMergedSpan.setAttribute('text-block', true);
+                newMergedSpan.textContent = mergedContent;
+                newSpans.push(newMergedSpan);
+            } else {
+                newSpans.push(currentSpan);
+                i++;
+            }
+        }
+        editableDivNode.innerHTML = '';
+        newSpans.forEach((span) => {
+            editableDivNode.appendChild(span);
+        });
+    };
 
     const removeEmptySpans = () => {
         const allSpan = contentEditableDivRef.current.querySelectorAll('span');
@@ -263,8 +341,101 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     const handlePaste = (event) => {
         event.preventDefault();
-        const text = (event.clipboardData || window.clipboardData).getData('text');
+        removeEmptySpans();
+        let text = (event.clipboardData || window.clipboardData).getData('text');
+        if(contentEditableDivRef.current.innerHTML === "<br>" || contentEditableDivRef.current.innerHTML.length === 0 || contentEditableDivRef.current.innerText === 0){
+           text = `<span text-block="true">${text}</span>`
+           contentEditableDivRef.current.innerHTML = text;
+           setDynamicVariables();
+           addEventListenersToVariableSpan();
+           return;
+        }
         document.execCommand('insertText', false, text);
+        setDynamicVariables();
+        addEventListenersToVariableSpan();
+    };
+
+    const setDynamicVariables = () => {
+        let fullHTMLString = '';
+        let dynamicVariables = [];
+
+        Array.from(contentEditableDivRef.current?.childNodes)?.forEach((node) => {
+            fullHTMLString += node.outerHTML;
+
+            if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute('text-block')) {
+                let nodeHTML = node.outerHTML;
+
+                let reversedHTML = nodeHTML.split('').reverse().join('');
+                let reverseOpenIndex = reversedHTML.lastIndexOf('{{');
+                let reverseCloseIndex = reversedHTML.indexOf('}}');
+
+                if (reverseOpenIndex !== -1) {
+                    let openIndex = fullHTMLString.length - reverseOpenIndex;
+                    dynamicVariables.push({
+                        type: 'open',
+                        index: openIndex,
+                    });
+                }
+
+                if (reverseCloseIndex !== -1) {
+                    let closeIndex = fullHTMLString.length - reverseCloseIndex;
+                    dynamicVariables.push({
+                        type: 'close',
+                        index: closeIndex,
+                    });
+                }
+            }
+        });
+
+        dynamicVariables.sort((a, b) => a.index - b.index);
+
+        let startIndex = 0;
+        let endIndex = dynamicVariables.length - 1;
+        let openIndex, closeIndex;
+
+        while (startIndex <= endIndex) {
+            const openTag = dynamicVariables[startIndex];
+            const closeTag = dynamicVariables[endIndex];
+
+            if (openTag.type === 'open' && closeTag.type === 'close') {
+                openIndex = openTag.index;
+                closeIndex = closeTag.index;
+                break;
+            }
+
+            if (openTag.type !== 'open') {
+                startIndex++;
+            }
+
+            if (closeTag.type !== 'close') {
+                endIndex--;
+            }
+        }
+
+        if (openIndex > 0 && closeIndex > 0) {
+            openIndex = openIndex - 2; 
+            let extractedString = fullHTMLString.substring(openIndex, closeIndex);
+            extractedString = `<span text-block='true'>${extractedString}</span>`;
+            
+            let innerText = extractInnerTextFromHTML(extractedString);
+            innerText = `</span><span id='dynamic' variable-block='true'>${innerText}</span><span text-block='true'>`;
+
+            fullHTMLString = fullHTMLString.substring(0, openIndex) + innerText + fullHTMLString.substring(closeIndex);
+            contentEditableDivRef.current.innerHTML = fullHTMLString;
+ 
+            const dynamicSpan = contentEditableDivRef.current.querySelector('#dynamic');
+            const selection = window.getSelection();
+            const range = document.createRange();
+
+            range.setStartAfter(dynamicSpan);
+            range.setEndAfter(dynamicSpan);
+            range.collapse(false);
+
+            selection.removeAllRanges();
+            selection.addRange(range);
+            dynamicSpan.removeAttribute('id');
+        }
+        removeEmptySpans();
     };
 
     return (
