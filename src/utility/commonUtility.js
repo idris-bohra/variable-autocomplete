@@ -14,7 +14,7 @@ export function removeAllPreceedingCurlyBracesFromTextNode(textContent, searchWo
   return { textBefore, textAfter }
 }
 
-export function saveCaretPosition (contentEditableDivRef) {
+export function saveCaretPosition(contentEditableDivRef) {
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return null;
 
@@ -26,29 +26,29 @@ export function saveCaretPosition (contentEditableDivRef) {
   return preCaretRange?.toString()?.length;
 };
 
-export function restoreCaretPosition (contentEditableDivRef , savedPosition) {
+export function restoreCaretPosition(contentEditableDivRef, savedPosition) {
   const selection = window.getSelection();
   const range = document.createRange();
   let charCount = 0;
   const traverseNodes = (node) => {
-      if (node?.nodeType === Node.TEXT_NODE) {
-          const nextCharCount = charCount + node?.length;
-          if (savedPosition <= nextCharCount) {
-              range.setStart(node, savedPosition - charCount);
-              range.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(range);
-              return true;
-          }
-          charCount = nextCharCount;
-      } else {
-          for (let i = 0; i < node?.childNodes?.length; i++) {
-              if (traverseNodes(node?.childNodes[i])) {
-                  return true;
-              }
-          }
+    if (node?.nodeType === Node.TEXT_NODE) {
+      const nextCharCount = charCount + node?.length;
+      if (savedPosition <= nextCharCount) {
+        range.setStart(node, savedPosition - charCount);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return true;
       }
-      return false;
+      charCount = nextCharCount;
+    } else {
+      for (let i = 0; i < node?.childNodes?.length; i++) {
+        if (traverseNodes(node?.childNodes[i])) {
+          return true;
+        }
+      }
+    }
+    return false;
   };
   traverseNodes(contentEditableDivRef);
 };
@@ -123,3 +123,80 @@ export function extractInnerTextFromHTML(htmlString) {
   const doc = parser.parseFromString(htmlString, 'text/html');
   return doc.body.innerText.trim();
 }
+
+export const setDynamicVariables = (contentEditableDivRef) => {
+  let resultHtmlString = '';
+  let dynamicVariables = [];
+  
+  Array.from(contentEditableDivRef.current?.childNodes)?.forEach((node) => {
+    resultHtmlString += node.outerHTML;
+    if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute('text-block')) {
+      let nodeHTML = node.outerHTML;
+      let reversedHTML = nodeHTML.split('').reverse().join('');
+      let reverseOpenIndex = reversedHTML.lastIndexOf('{{');
+      let reverseCloseIndex = reversedHTML.indexOf('}}');
+      if (reverseOpenIndex !== -1) {
+        let openIndex = resultHtmlString.length - reverseOpenIndex;
+        dynamicVariables.push({
+          type: 'open',
+          index: openIndex,
+        });
+      }
+      if (reverseCloseIndex !== -1) {
+        let closeIndex = resultHtmlString.length - reverseCloseIndex;
+        dynamicVariables.push({
+          type: 'close',
+          index: closeIndex,
+        });
+      }
+    }
+  });
+
+  dynamicVariables.sort((a, b) => a.index - b.index);
+  let startIndex = 0;
+  let endIndex = dynamicVariables.length - 1;
+  let openIndex, closeIndex;
+
+  while (startIndex <= endIndex) {
+    const openTag = dynamicVariables[startIndex];
+    const closeTag = dynamicVariables[endIndex];
+
+    if (openTag.type === 'open' && closeTag.type === 'close') {
+      openIndex = openTag.index;
+      closeIndex = closeTag.index;
+      break;
+    }
+
+    if (openTag.type !== 'open') {
+      startIndex++;
+    }
+
+    if (closeTag.type !== 'close') {
+      endIndex--;
+    }
+  }
+
+  if (openIndex > 0 && closeIndex > 0) {
+    openIndex = openIndex - 2;
+    let extractedString = resultHtmlString.substring(openIndex, closeIndex);
+    extractedString = `<span text-block='true'>${extractedString}</span>`;
+
+    let innerText = extractInnerTextFromHTML(extractedString);
+    innerText = `</span><span id='dynamic' variable-block='true'>${innerText}</span><span text-block='true'>`;
+
+    resultHtmlString = resultHtmlString.substring(0, openIndex) + innerText + resultHtmlString.substring(closeIndex);
+    contentEditableDivRef.current.innerHTML = resultHtmlString;
+
+    const dynamicSpan = contentEditableDivRef.current.querySelector('#dynamic');
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    range.setStartAfter(dynamicSpan);
+    range.setEndAfter(dynamicSpan);
+    range.collapse(false);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    dynamicSpan.removeAttribute('id');
+  }
+};

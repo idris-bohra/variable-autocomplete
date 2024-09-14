@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, extractInnerTextFromHTML, saveCaretPosition, restoreCaretPosition } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, saveCaretPosition, restoreCaretPosition, setDynamicVariables } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -184,7 +184,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             removeAllEventListeners();
         });
         mergeTextBlockSpans();
-        setDynamicVariables();
+        setDynamicVariables(contentEditableDivRef);
         restoreCaretPosition(contentEditableDivRef.current , prevCaretPosition);
         addEventListenersToVariableSpan();
         removeEmptySpans();
@@ -304,97 +304,17 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         if(contentEditableDivRef.current.innerHTML === "<br>" || contentEditableDivRef.current.innerHTML.length === 0 || contentEditableDivRef.current.innerText === 0){
            text = `<span text-block="true">${text}</span>`
            contentEditableDivRef.current.innerHTML = text;
-           setDynamicVariables();
+           setDynamicVariables(contentEditableDivRef);
+           removeEmptySpans();
            addEventListenersToVariableSpan();
            return;
         }
         document.execCommand('insertText', false, text);
-        setDynamicVariables();
+        setDynamicVariables(contentEditableDivRef);
+        removeEmptySpans();
         addEventListenersToVariableSpan();
     };
 
-    const setDynamicVariables = () => {
-        let fullHTMLString = '';
-        let dynamicVariables = [];
-
-        Array.from(contentEditableDivRef.current?.childNodes)?.forEach((node) => {
-            fullHTMLString += node.outerHTML;
-
-            if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute('text-block')) {
-                let nodeHTML = node.outerHTML;
-
-                let reversedHTML = nodeHTML.split('').reverse().join('');
-                let reverseOpenIndex = reversedHTML.lastIndexOf('{{');
-                let reverseCloseIndex = reversedHTML.indexOf('}}');
-
-                if (reverseOpenIndex !== -1) {
-                    let openIndex = fullHTMLString.length - reverseOpenIndex;
-                    dynamicVariables.push({
-                        type: 'open',
-                        index: openIndex,
-                    });
-                }
-
-                if (reverseCloseIndex !== -1) {
-                    let closeIndex = fullHTMLString.length - reverseCloseIndex;
-                    dynamicVariables.push({
-                        type: 'close',
-                        index: closeIndex,
-                    });
-                }
-            }
-        });
-
-        dynamicVariables.sort((a, b) => a.index - b.index);
-
-        let startIndex = 0;
-        let endIndex = dynamicVariables.length - 1;
-        let openIndex, closeIndex;
-
-        while (startIndex <= endIndex) {
-            const openTag = dynamicVariables[startIndex];
-            const closeTag = dynamicVariables[endIndex];
-
-            if (openTag.type === 'open' && closeTag.type === 'close') {
-                openIndex = openTag.index;
-                closeIndex = closeTag.index;
-                break;
-            }
-
-            if (openTag.type !== 'open') {
-                startIndex++;
-            }
-
-            if (closeTag.type !== 'close') {
-                endIndex--;
-            }
-        }
-
-        if (openIndex > 0 && closeIndex > 0) {
-            openIndex = openIndex - 2; 
-            let extractedString = fullHTMLString.substring(openIndex, closeIndex);
-            extractedString = `<span text-block='true'>${extractedString}</span>`;
-            
-            let innerText = extractInnerTextFromHTML(extractedString);
-            innerText = `</span><span id='dynamic' variable-block='true'>${innerText}</span><span text-block='true'>`;
-
-            fullHTMLString = fullHTMLString.substring(0, openIndex) + innerText + fullHTMLString.substring(closeIndex);
-            contentEditableDivRef.current.innerHTML = fullHTMLString;
- 
-            const dynamicSpan = contentEditableDivRef.current.querySelector('#dynamic');
-            const selection = window.getSelection();
-            const range = document.createRange();
-
-            range.setStartAfter(dynamicSpan);
-            range.setEndAfter(dynamicSpan);
-            range.collapse(false);
-
-            selection.removeAllRanges();
-            selection.addRange(range);
-            dynamicSpan.removeAttribute('id');
-        }
-        removeEmptySpans();
-    };
 
     return (
         <React.Fragment>
