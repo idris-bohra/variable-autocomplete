@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, extractInnerTextFromHTML } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, extractInnerTextFromHTML, saveCaretPosition, restoreCaretPosition } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -131,50 +131,8 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         addEventListenersToVariableSpan();
     }
 
-    const saveCaretPosition = () => {
-        const selection = window.getSelection();
-        if (selection.rangeCount === 0) return null;
-
-        const range = selection.getRangeAt(0);
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(contentEditableDivRef.current);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-
-        return preCaretRange.toString().length;
-    };
-
-    // Restore the caret position
-    const restoreCaretPosition = (savedPosition) => {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        let charCount = 0;
-
-        const traverseNodes = (node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                const nextCharCount = charCount + node.length;
-                if (savedPosition <= nextCharCount) {
-                    range.setStart(node, savedPosition - charCount);
-                    range.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    return true;
-                }
-                charCount = nextCharCount;
-            } else {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    if (traverseNodes(node.childNodes[i])) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
-
-        traverseNodes(contentEditableDivRef.current);
-    };
-
     const handleContentChange = (event) => {
-        const pos = saveCaretPosition();
+        const prevCaretPosition = saveCaretPosition(contentEditableDivRef.current);
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const currentNode = selection.anchorNode;
@@ -227,15 +185,15 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         });
         mergeTextBlockSpans();
         setDynamicVariables();
-        restoreCaretPosition(pos);
+        restoreCaretPosition(contentEditableDivRef.current , prevCaretPosition);
         addEventListenersToVariableSpan();
         removeEmptySpans();
         handleValueChange && handleValueChange();
     };
 
     const mergeTextBlockSpans = () => {
-        const editableDivNode = contentEditableDivRef.current;
-        const spans = Array.from(editableDivNode.querySelectorAll('span'));
+        const editableDivNodeRef = contentEditableDivRef.current;
+        const spans = Array.from(editableDivNodeRef.querySelectorAll('span'));
         let newSpans = [];
         let i = 0;
         while (i < spans.length) {
@@ -256,9 +214,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
                 i++;
             }
         }
-        editableDivNode.innerHTML = '';
+        editableDivNodeRef.innerHTML = '';
         newSpans.forEach((span) => {
-            editableDivNode.appendChild(span);
+            editableDivNodeRef.appendChild(span);
         });
     };
 
