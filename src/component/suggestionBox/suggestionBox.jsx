@@ -16,6 +16,7 @@ export default function SuggestionBox(props) {
         }
     }, [props.suggestionIndex]);
 
+
     const handleSuggestionHoverEvent = (index) => {
         props?.setSuggestionIndex(index)
     }

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces } from '../../utility/commonUtility.js';
+import { filterSuggestions, getTextAfterLastOpenCurlyBrace, isEncodedWithCurlyBraces, removeAllPreceedingCurlyBracesFromTextNode, removeOuterCurlyBraces, saveCaretPosition, restoreCaretPosition, setDynamicVariables } from '../../utility/commonUtility.js';
 import { createNewTextNode, createNewVariableNode } from '../../utility/createNewNode.js';
 import { getCaretPosition } from '../../utility/getCaretPosition.js';
 import SuggestionBox from '../suggestionBox/suggestionBox.jsx';
@@ -132,6 +132,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
     }
 
     const handleContentChange = (event) => {
+        const prevCaretPosition = saveCaretPosition(contentEditableDivRef.current);
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
         const currentNode = selection.anchorNode;
@@ -173,16 +174,51 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
                 selection.addRange(range);
             }
         }
-        Array.from(editableDivNode.childNodes)?.forEach((span) => {
-            if (isEncodedWithCurlyBraces(span.textContent)) return;
-            span.setAttribute('text-block', true);
-            span.removeAttribute('variable-block');
+        Array.from(editableDivNode?.childNodes)?.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                if (!isEncodedWithCurlyBraces(node?.textContent)) {
+                    node.setAttribute('text-block', true);
+                    node.removeAttribute('variable-block');
+                }
+            }
             removeAllEventListeners();
-        })
+        });
+        mergeTextBlockSpans();
+        setDynamicVariables(contentEditableDivRef);
+        restoreCaretPosition(contentEditableDivRef.current , prevCaretPosition);
         addEventListenersToVariableSpan();
         removeEmptySpans();
         handleValueChange && handleValueChange();
-    }
+    };
+
+    const mergeTextBlockSpans = () => {
+        const editableDivNodeRef = contentEditableDivRef.current;
+        const spans = Array.from(editableDivNodeRef.querySelectorAll('span'));
+        let newSpans = [];
+        let i = 0;
+        while (i < spans.length) {
+            let currentSpan = spans[i];
+            if (currentSpan.attributes[0]?.name === 'text-block' && currentSpan.getAttribute('text-block')) {
+                let mergedContent = currentSpan.textContent;
+                i++;
+                while (i < spans.length && spans[i].attributes[0]?.name === 'text-block' && spans[i].getAttribute('text-block')) {
+                    mergedContent += spans[i].textContent;
+                    i++; 
+                }
+                let newMergedSpan = document.createElement('span');
+                newMergedSpan.setAttribute('text-block', true);
+                newMergedSpan.textContent = mergedContent;
+                newSpans.push(newMergedSpan);
+            } else {
+                newSpans.push(currentSpan);
+                i++;
+            }
+        }
+        editableDivNodeRef.innerHTML = '';
+        newSpans.forEach((span) => {
+            editableDivNodeRef.appendChild(span);
+        });
+    };
 
     const removeEmptySpans = () => {
         const allSpan = contentEditableDivRef.current.querySelectorAll('span');
@@ -263,9 +299,22 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     const handlePaste = (event) => {
         event.preventDefault();
-        const text = (event.clipboardData || window.clipboardData).getData('text');
+        removeEmptySpans();
+        let text = (event.clipboardData || window.clipboardData).getData('text');
+        if(contentEditableDivRef.current.innerHTML === "<br>" || contentEditableDivRef.current.innerHTML.length === 0 || contentEditableDivRef.current.innerText === 0){
+           text = `<span text-block="true">${text}</span>`
+           contentEditableDivRef.current.innerHTML = text;
+           setDynamicVariables(contentEditableDivRef);
+           removeEmptySpans();
+           addEventListenersToVariableSpan();
+           return;
+        }
         document.execCommand('insertText', false, text);
+        setDynamicVariables(contentEditableDivRef);
+        removeEmptySpans();
+        addEventListenersToVariableSpan();
     };
+
 
     return (
         <React.Fragment>
