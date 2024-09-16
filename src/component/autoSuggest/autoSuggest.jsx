@@ -174,21 +174,39 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
                 selection.addRange(range);
             }
         }
+        let currentText = '';
         Array.from(editableDivNode?.childNodes)?.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
                 if (!isEncodedWithCurlyBraces(node?.textContent)) {
                     node.setAttribute('text-block', true);
                     node.removeAttribute('variable-block');
+                    currentText = node?.textContent;
                 }
             }
             removeAllEventListeners();
         });
+        if(currentText != ''){
+            setDiffVariableBlock(currentText);
+        }
         mergeTextBlockSpans();
         setDynamicVariables(contentEditableDivRef);
         restoreCaretPosition(contentEditableDivRef.current, prevCaretPosition);
         addEventListenersToVariableSpan();
         removeEmptySpans();
         handleValueChange && handleValueChange();
+    };
+
+    const setDiffVariableBlock = () => {
+        const selection = window.getSelection();
+        const currentNode = selection.anchorNode.parentNode;
+        const newHTML = convertTextToHTML(currentNode.innerText);
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = newHTML;
+        const parentNode = currentNode.parentNode;
+        Array.from(tempContainer.childNodes).forEach((newNode) => {
+            parentNode.insertBefore(newNode, currentNode);
+        });
+        parentNode.removeChild(currentNode);
     };
 
     const mergeTextBlockSpans = () => {
