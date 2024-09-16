@@ -1,3 +1,5 @@
+import { createNewTextNode } from "./createNewNode";
+
 export function removeAllPreceedingCurlyBracesFromTextNode(textContent, searchWord) {
   const selection = window.getSelection();
   const range = selection.getRangeAt(0);
@@ -127,7 +129,7 @@ export function extractInnerTextFromHTML(htmlString) {
 export const setDynamicVariables = (contentEditableDivRef) => {
   let resultHtmlString = '';
   let dynamicVariables = [];
-  
+
   Array.from(contentEditableDivRef.current?.childNodes)?.forEach((node) => {
     resultHtmlString += node.outerHTML;
     if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute('text-block')) {
