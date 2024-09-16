@@ -297,11 +297,98 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         }
     }
 
+    const convertTextToHTML = (str) => {
+        if (str == null || typeof str !== 'string' || str.trim() === '') return str;
+        str = str.trim();
+        if (str.startsWith('<span')) {
+            return str;
+        }
+        const regex = /(\{\{[^\}]+\}\})/g;
+        const parts = str.split(regex).filter(part => part !== '');
+        return parts.map(part => {
+            if (part.startsWith('{{') && part.endsWith('}}')) {
+                return `<span variable-block='true'>${part}</span>`;
+            } else {
+                return `<span text-block='true'>${part}</span>`;
+            }
+        }).join('');
+    };
+
+    const fixSpanTags = (html) => {
+        if (!html || html?.length === 0) return '';
+
+        if (html === '</span>' || html === '<span text-block="true">' || html === `<span text-block='true'>`) return '';
+
+        if (html.startsWith('</span>')) {
+            html = html?.slice(7);
+        }
+        else if (html.startsWith("<span text-block='true'>") || html.startsWith('<span text-block="true">')) {
+            html = html?.slice(24);
+        }
+        else if ((!html.startsWith(`<span text-block='true'>`) || !html.startsWith(`<span text-block="true">`)) && (!html.startsWith(`<span variable-block='true'>`) || !html.startsWith(`<span variable-block="true">`))) {
+            html = `<span text-block='true'>` + html;
+        }
+
+        if (html.endsWith("<span text-block='true'>") || html.endsWith('<span text-block="true">')) {
+            html = html?.slice(0, -24);
+        } else if (html.endsWith("<span variable-block='true'>") || html.endsWith('<span variable-block="true">')) {
+            html = html?.slice(0, -29);
+        }
+        else if (!html.endsWith('</span>')) {
+            html = html + '</span>';
+        }
+
+        return html;
+    }
+
+    const solve = (originalHtml,caretPos,html) => {
+        let originalPos;
+        let currentCount = 0;
+        let chars = '';
+        let isSpan = false;
+        for(let i=0;i<originalHtml.length;i++){
+            if(originalHtml[i] === '<'){
+                isSpan = true;
+                continue;
+            }
+            else if(originalHtml[i] === '>'){
+                isSpan = false;
+                continue;
+            }
+            if(!isSpan){
+                chars += originalHtml[i];
+                currentCount++;
+            }
+            if(currentCount === caretPos){
+                originalPos = i;
+                break;
+            }
+        }
+        console.log(originalHtml.substring(0,originalPos+1));
+        console.log(html);
+        console.log(originalHtml.substring(originalPos+1));
+        /* let newHTML = '';
+        let after = '';
+        if(originalHtml.substring(originalPos+1).startsWith('{{')){
+            after = `<span variable-block="true">${originalHtml.substring(originalPos+1)}`
+        }
+        else{
+            after = `<span text-block="true">${originalHtml.substring(originalPos+1)}`
+        }
+        newHTML = `${originalHtml.substring(0,originalPos+1)}</span>` + html + after;
+        return newHTML; */
+    }
     const handlePaste = (event) => {
         event.preventDefault();
         removeEmptySpans();
         let text = (event.clipboardData || window.clipboardData).getData('text');
-        if(contentEditableDivRef.current.innerHTML === "<br>" || contentEditableDivRef.current.innerHTML.length === 0 || contentEditableDivRef.current.innerText === 0){
+        const html = convertTextToHTML(text);
+        let originalHtml = contentEditableDivRef.current.innerHTML;
+        let caretPos = saveCaretPosition(contentEditableDivRef.current);
+        console.log(caretPos);
+        solve(originalHtml,caretPos,html);
+        /* contentEditableDivRef.current.innerHTML = newHTML; */
+        /* if(contentEditableDivRef.current.innerHTML === "<br>" || contentEditableDivRef.current.innerHTML.length === 0 || contentEditableDivRef.current.innerText === 0){
            text = `<span text-block="true">${text}</span>`
            contentEditableDivRef.current.innerHTML = text;
            setDynamicVariables(contentEditableDivRef);
@@ -312,7 +399,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         document.execCommand('insertText', false, text);
         setDynamicVariables(contentEditableDivRef);
         removeEmptySpans();
-        addEventListenersToVariableSpan();
+        addEventListenersToVariableSpan(); */
     };
 
 
