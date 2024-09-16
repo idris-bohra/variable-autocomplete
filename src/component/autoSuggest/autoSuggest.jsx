@@ -303,13 +303,13 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         const selection = window.getSelection();
         let text = (event.clipboardData || window.clipboardData).getData('text');
         if (text.length === 0) return;
-        let currentNode = selection.anchorNode.parentNode;
+        const currentNode = selection.anchorNode.parentNode;
         const html = convertTextToHTML(text);
         const createDiv = document.createElement('div');
         createDiv.innerHTML = html;
         const isVariableBlock = createDiv.querySelectorAll(`span[variable-block='true']`);
         const spans = createDiv.querySelectorAll('span');
-        let { textElementAfter, textElementBefore } = getTextBeforeAndTextAfterNode();
+        const { textElementAfter, textElementBefore } = getTextBeforeAndTextAfterNode();
         if (!selection.anchorNode.parentNode.getAttribute('variable-block')) {
             if (Array.from(isVariableBlock).length === 0) {
                 document.execCommand('insertText', false, text);
@@ -328,20 +328,23 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         }
         else if (selection.anchorNode.parentNode.getAttribute('variable-block') && (selection.anchorOffset === 1 || selection.anchorOffset >= selection.anchorNode.parentNode.innerText.length - 1)) {
             if (selection.anchorOffset === 0) {
-                textElementAfter = createNewVariableNode(textElementAfter.innerText);
                 Array.from(spans).forEach((span) => {
-                    contentEditableDivRef.current.insertBefore(span, currentNode);
+                    contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
                 })
-                contentEditableDivRef.current.insertBefore(textElementAfter, currentNode);
             }
-            else if (selection.anchorOffset === selection.anchorNode.parentNode.innerText.length) {
-                currentNode = createNewVariableNode(textElementBefore.innerText);
-                Array.from(spans).forEach((span) => {
-                    contentEditableDivRef.current.insertBefore(span, currentNode);
-                })
-                contentEditableDivRef.current.insertBefore(textElementAfter, currentNode);
+            else if (selection.anchorOffset >= selection.anchorNode.parentNode.innerText.length - 1) {
+                if (selection.anchorNode.parentNode.nextSibling) {
+                    Array.from(spans).forEach((span) => {
+                        contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
+                    })
+                } else {
+                    Array.from(spans).forEach((span) => {
+                        contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
+                    })
+                }
             }
             else {
+                contentEditableDivRef.current.insertBefore(textElementBefore, currentNode);
                 Array.from(spans).forEach((span) => {
                     contentEditableDivRef.current.insertBefore(span, currentNode);
                 })
