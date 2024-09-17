@@ -20,15 +20,15 @@ export default function SuggestionValueComponent({ singleSuggestionDetails }) {
         <div className='suggestionValueMainContainer'>
             <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>INITIAL</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.initialValue.trim() ? singleSuggestionDetails?.initialValue : `NA`}</div>
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.initialValue?.trim() ? singleSuggestionDetails?.initialValue : `NA`}</div>
             </div>
             <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>CURRENT</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.currentValue.trim() ? singleSuggestionDetails?.currentValue : 'NA'}</div>
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.currentValue?.trim() ? singleSuggestionDetails?.currentValue : 'NA'}</div>
             </div>
             <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>SCOPE</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.scope.trim() ? singleSuggestionDetails?.scope : 'No Value'}</div>
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.scope?.trim() ? singleSuggestionDetails?.scope : 'No Value'}</div>
             </div>
         </div>
     )
