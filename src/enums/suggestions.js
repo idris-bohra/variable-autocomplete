@@ -1,7 +1,7 @@
 export const suggestions = {
     "apiKey": {
-        "initialValue": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
-        "currentValue": "L0nGstr1nGgen3rationIsFuNbutcaNalSoBechall3ngingWh3nyouTrytoMakeItReaLLyREALLyREALLyLong1234567890ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwxyzThisStringJustKeepsGoingOnAndOnWithoutStoppingAndItIncludesAllSortsOfCharactersToMakeItEvenMoreInterestingAndComplex",
+        "initialValue": "",
+        "currentValue": "",
         "scope": "Global"
     },
     "userToken": {

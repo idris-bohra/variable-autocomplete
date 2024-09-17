@@ -318,28 +318,25 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     const handlePaste = (event) => {
         event.preventDefault();
-        if (!contentEditableDivRef.current) return;
-
-        const savedCaretPos = saveCaretPosition(contentEditableDivRef.current);
         const selection = window.getSelection();
+        const savedCaretPos = saveCaretPosition(contentEditableDivRef.current);
+        const currentNode = selection?.anchorNode?.parentNode;
+        if (!currentNode) return;
+        if (!contentEditableDivRef.current) return;
         let text = (event.clipboardData || window.clipboardData).getData('text');
         if (!text || text.length === 0) return;
-
-        const currentNode = selection?.anchorNode?.parentNode;
+        if (!selection.anchorNode?.parentNode?.getAttribute) return;
+        let html = convertTextToHTML(text);
         if (!contentEditableDivRef.current.innerHTML || contentEditableDivRef.current.innerHTML.trim() === '') {
-            const html = convertTextToHTML(text);
             contentEditableDivRef.current.innerHTML = html;
+            handleValueChange && handleValueChange();
             return;
         }
-        if (!currentNode) return;
-
-        const html = convertTextToHTML(text);
         const createDiv = document.createElement('div');
         createDiv.innerHTML = html;
         const isVariableBlock = createDiv.querySelectorAll(`span[variable-block='true']`);
         const spans = createDiv.querySelectorAll('span');
         const { textElementAfter, textElementBefore } = getTextBeforeAndTextAfterNode();
-        if (!selection.anchorNode?.parentNode?.getAttribute) return;
 
         if (!selection.anchorNode.parentNode.getAttribute('variable-block')) {
             if (Array.from(isVariableBlock).length === 0) {
@@ -375,8 +372,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             }
         }
         removeEmptySpans();
-        removeAllEventListeners();
+        addEventListenersToVariableSpan();
         restoreCaretPosition(contentEditableDivRef.current, savedCaretPos);
+        handleValueChange && handleValueChange();
     };
 
     return (
