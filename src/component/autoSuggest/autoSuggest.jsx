@@ -177,6 +177,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         let currentText = '';
         Array.from(editableDivNode?.childNodes)?.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
+                if(node.getAttribute('text-block')) return;
                 if (!isEncodedWithCurlyBraces(node?.textContent)) {
                     node.setAttribute('text-block', true);
                     node.removeAttribute('variable-block');
@@ -317,63 +318,66 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     const handlePaste = (event) => {
         event.preventDefault();
+        if (!contentEditableDivRef.current) return;
+
         const savedCaretPos = saveCaretPosition(contentEditableDivRef.current);
         const selection = window.getSelection();
         let text = (event.clipboardData || window.clipboardData).getData('text');
-        if (text.length === 0) return;
-        const currentNode = selection.anchorNode.parentNode;
+        if (!text || text.length === 0) return;
+
+        const currentNode = selection?.anchorNode?.parentNode;
+        if (!contentEditableDivRef.current.innerHTML || contentEditableDivRef.current.innerHTML.trim() === '') {
+            const html = convertTextToHTML(text);
+            contentEditableDivRef.current.innerHTML = html;
+            return;
+        }
+        if (!currentNode) return;
+
         const html = convertTextToHTML(text);
         const createDiv = document.createElement('div');
         createDiv.innerHTML = html;
         const isVariableBlock = createDiv.querySelectorAll(`span[variable-block='true']`);
         const spans = createDiv.querySelectorAll('span');
         const { textElementAfter, textElementBefore } = getTextBeforeAndTextAfterNode();
+        if (!selection.anchorNode?.parentNode?.getAttribute) return;
+
         if (!selection.anchorNode.parentNode.getAttribute('variable-block')) {
             if (Array.from(isVariableBlock).length === 0) {
                 document.execCommand('insertText', false, text);
+            } else {
+                if (contentEditableDivRef.current.contains(currentNode)) {
+                    contentEditableDivRef.current.insertBefore(textElementBefore, currentNode);
+                    Array.from(spans).forEach((span) => {
+                        contentEditableDivRef.current.insertBefore(span, currentNode);
+                    });
+                    contentEditableDivRef.current.insertBefore(textElementAfter, currentNode);
+                    contentEditableDivRef.current.removeChild(currentNode);
+                }
             }
-            else {
-                contentEditableDivRef.current.insertBefore(textElementBefore, currentNode);
-                Array.from(spans).forEach((span) => {
-                    contentEditableDivRef.current.insertBefore(span, currentNode);
-                })
-                contentEditableDivRef.current.insertBefore(textElementAfter, currentNode);
-                contentEditableDivRef.current.removeChild(currentNode);
-            }
-        }
-        else if (selection.anchorNode.parentNode.getAttribute('variable-block') && selection.anchorOffset > 1 && selection.anchorOffset < selection.anchorNode.parentNode.innerText.length - 1) {
+        } else if (selection.anchorNode.parentNode.getAttribute('variable-block') && selection.anchorOffset > 1 && selection.anchorOffset < selection.anchorNode.parentNode.innerText.length - 1) {
             document.execCommand('insertText', false, text);
-        }
-        else if (selection.anchorNode.parentNode.getAttribute('variable-block') && (selection.anchorOffset === 1 || selection.anchorOffset >= selection.anchorNode.parentNode.innerText.length - 1)) {
+        } else if (selection.anchorNode.parentNode.getAttribute('variable-block') && (selection.anchorOffset === 1 || selection.anchorOffset >= selection.anchorNode.parentNode.innerText.length - 1)) {
             if (selection.anchorOffset === 0) {
                 Array.from(spans).forEach((span) => {
                     contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
-                })
-            }
-            else if (selection.anchorOffset >= selection.anchorNode.parentNode.innerText.length - 1) {
-                if (selection.anchorNode.parentNode.nextSibling) {
-                    Array.from(spans).forEach((span) => {
-                        contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
-                    })
-                } else {
-                    Array.from(spans).forEach((span) => {
-                        contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling);
-                    })
-                }
-            }
-            else {
+                });
+            } else if (selection.anchorOffset > selection.anchorNode.parentNode.innerText.length - 1) {
+                Array.from(spans).forEach((span) => {
+                    contentEditableDivRef.current.insertBefore(span, selection.anchorNode.parentNode.nextSibling || null);
+                });
+            } else {
                 contentEditableDivRef.current.insertBefore(textElementBefore, currentNode);
                 Array.from(spans).forEach((span) => {
                     contentEditableDivRef.current.insertBefore(span, currentNode);
-                })
+                });
                 contentEditableDivRef.current.insertBefore(textElementAfter, currentNode);
                 contentEditableDivRef.current.removeChild(currentNode);
             }
         }
         removeEmptySpans();
+        removeAllEventListeners();
         restoreCaretPosition(contentEditableDivRef.current, savedCaretPos);
     };
-
 
     return (
         <React.Fragment>

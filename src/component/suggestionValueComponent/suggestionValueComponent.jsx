@@ -18,18 +18,18 @@ export default function SuggestionValueComponent({ singleSuggestionDetails }) {
     }
     return (
         <div className='suggestionValueMainContainer'>
-            {singleSuggestionDetails?.initialValue && <div className='suggestionTypeContainer'>
+            <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>INITIAL</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.initialValue}</div>
-            </div>}
-            {singleSuggestionDetails?.currentValue && <div className='suggestionTypeContainer'>
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.initialValue.trim() ? singleSuggestionDetails?.initialValue : `No Value`}</div>
+            </div>
+            <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>CURRENT</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.currentValue}</div>
-            </div>}
-            {singleSuggestionDetails?.scope && <div className='suggestionTypeContainer'>
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.currentValue.trim() ? singleSuggestionDetails?.currentValue : 'No Value'}</div>
+            </div>
+            <div className='suggestionTypeContainer'>
                 <div className='suggestionType'>SCOPE</div>
-                <div className='suggestionTypeValue'>{singleSuggestionDetails?.scope}</div>
-            </div>}
+                <div className='suggestionTypeValue'>{singleSuggestionDetails?.scope.trim() ? singleSuggestionDetails?.scope : 'No Value'}</div>
+            </div>
         </div>
     )
 }
