@@ -40,6 +40,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         editableDiv.innerHTML = initial;
         removeEmptySpans();
         addEventListenersToVariableSpan();
+        checkShowPlaceholder();
     }, [initial]);
 
     function handleEditableDivBlur() {
