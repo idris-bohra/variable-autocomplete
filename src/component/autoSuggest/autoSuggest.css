@@ -39,7 +39,7 @@
     width: 100%;
     position: absolute;
     font-size: 12px;
-    color: grey;
+    color: rgba(128, 128, 128, 0.5);
     display: flex;
     justify-content: start;
     align-items: center;
