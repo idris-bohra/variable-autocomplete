@@ -16,7 +16,8 @@
     align-items: center;
     text-wrap: nowrap;
     outline: none;
-    
+    position: relative;
+
     &:focus-within {
         border: 1px solid rgba(0, 0, 0, 0.57);
     }
@@ -32,6 +33,21 @@
     overflow-x: auto;
     overflow-y: hidden;
     position: relative;
+}
+
+.placeholder-editable-div {
+    width: 100%;
+    position: absolute;
+    font-size: 12px;
+    color: grey;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+
+.placeholder-text {
+    margin: 4px 10px;
+
 }
 
 .__custom-autosuggest-block__ {

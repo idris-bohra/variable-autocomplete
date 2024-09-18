@@ -7,7 +7,7 @@ import Tooltip from '../tooltip/tooltip.jsx';
 import { createPortal } from 'react-dom';
 import './autoSuggest.css';
 
-export default function AutoSuggest({ suggestions, contentEditableDivRef, initial, handleValueChange, disable }) {
+export default function AutoSuggest({ suggestions, contentEditableDivRef, initial, handleValueChange, disable, placeholder }) {
     const showVariableValueTimeoutRef = useRef(null);
     const latestSuggestionsRef = useRef(suggestions || {});
 
@@ -19,6 +19,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
     const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions || {});
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
+    const [showPlaceholder, setShowPlaceholder] = useState(0);
 
     useEffect(() => {
         const editableDiv = contentEditableDivRef?.current;
@@ -113,6 +114,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         setTimeout(() => contentEditableDivRef.current.focus());
         addEventListenersToVariableSpan();
         removeEmptySpans();
+        checkShowPlaceholder();
         handleValueChange && handleValueChange();
     }
 
@@ -127,6 +129,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         selection.removeAllRanges();
         range.collapse(false);
         selection.addRange(range);
+        checkShowPlaceholder();
         handleValueChange && handleValueChange();
         addEventListenersToVariableSpan();
     }
@@ -177,7 +180,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         let currentText = '';
         Array.from(editableDivNode?.childNodes)?.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-                if(node.getAttribute('text-block')) return;
+                if (node.getAttribute('text-block')) return;
                 if (!isEncodedWithCurlyBraces(node?.textContent)) {
                     node.setAttribute('text-block', true);
                     node.removeAttribute('variable-block');
@@ -186,7 +189,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             }
             removeAllEventListeners();
         });
-        if(currentText != ''){
+        if (currentText != '') {
             setDiffVariableBlock(currentText);
         }
         mergeTextBlockSpans();
@@ -194,6 +197,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         restoreCaretPosition(contentEditableDivRef.current, prevCaretPosition);
         addEventListenersToVariableSpan();
         removeEmptySpans();
+        checkShowPlaceholder();
         handleValueChange && handleValueChange();
     };
 
@@ -329,6 +333,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         let html = convertTextToHTML(text);
         if (!contentEditableDivRef.current.innerHTML || contentEditableDivRef.current.innerHTML.trim() === '') {
             contentEditableDivRef.current.innerHTML = html;
+            checkShowPlaceholder();
             handleValueChange && handleValueChange();
             return;
         }
@@ -374,14 +379,32 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         removeEmptySpans();
         addEventListenersToVariableSpan();
         restoreCaretPosition(contentEditableDivRef.current, savedCaretPos);
+        checkShowPlaceholder();
         handleValueChange && handleValueChange();
     };
+
+    function checkShowPlaceholder() {
+        if (contentEditableDivRef?.current?.innerText?.length === 0) return setShowPlaceholder(true);
+        if (contentEditableDivRef?.current?.innerText?.length != 0 && showPlaceholder === true) return setShowPlaceholder(false);
+    }
 
     return (
         <React.Fragment>
             <div className={`main__div ${disable && 'disable-div'}`}>
+                <div className='placeholder-editable-div'>
+                    <span className='placeholder-text'>{placeholder}</span>
+                </div>
                 <div className='auto-suggest'>
-                    <div ref={contentEditableDivRef} className={`__custom-autosuggest-block__`} onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} contentEditable={disable === true ? false : true} onInput={handleContentChange} onPaste={handlePaste}></div>
+                    <div
+                        style={{ background: showPlaceholder ? 'transparent' : 'white' }}
+                        ref={contentEditableDivRef} className={`__custom-autosuggest-block__`}
+                        onKeyDown={handleKeyDown}
+                        onKeyUp={handleKeyUp}
+                        contentEditable={disable === true ? false : true}
+                        onInput={handleContentChange}
+                        onPaste={handlePaste}
+                    >
+                    </div>
                 </div>
             </div>
             {showSuggestions && createPortal(<SuggestionBox setSuggestionIndex={setSuggestionIndex} suggestionIndex={suggestionIndex} filteredSuggestions={filteredSuggestions} caretPosition={caretPosition} insertSuggestion={insertSuggestion} />, document.getElementById('root'))}
