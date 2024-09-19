@@ -35,6 +35,16 @@
     position: relative;
 }
 
+.__custom-autosuggest-block__ {
+    outline: none;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
 .placeholder-editable-div {
     width: 100%;
     position: absolute;
@@ -48,15 +58,6 @@
 .placeholder-text {
     margin: 4px 10px;
 
-}
-
-.__custom-autosuggest-block__ {
-    outline: none;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    overflow-x: scroll;
-    overflow-y: hidden;
 }
 
 span[variable-block] {

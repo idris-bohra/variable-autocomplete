@@ -19,7 +19,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
     const [filteredSuggestions, setFilteredSuggestions] = useState(suggestions || {});
     const [searchWord, setSearchWord] = useState(null);
     const [suggestionIndex, setSuggestionIndex] = useState(0);
-    const [showPlaceholder, setShowPlaceholder] = useState(0);
+    const [showPlaceholder, setShowPlaceholder] = useState(true);
 
     useEffect(() => {
         const editableDiv = contentEditableDivRef?.current;
@@ -42,6 +42,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         addEventListenersToVariableSpan();
         checkShowPlaceholder();
     }, [initial]);
+
 
     function handleEditableDivBlur() {
         setShowSuggestions(false);
@@ -335,6 +336,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
         if (!contentEditableDivRef.current.innerHTML || contentEditableDivRef.current.innerHTML.trim() === '') {
             contentEditableDivRef.current.innerHTML = html;
             checkShowPlaceholder();
+            addEventListenersToVariableSpan();
             handleValueChange && handleValueChange();
             return;
         }
@@ -391,13 +393,12 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     return (
         <React.Fragment>
-            <div className={`main__div ${disable && 'disable-div'}`}>
-                <div className='placeholder-editable-div'>
+            <div className={`main__div ${disable ? 'disable-div' : ''}`}>
+                {showPlaceholder && !disable ? <div className='placeholder-editable-div'>
                     <span className='placeholder-text'>{placeholder}</span>
-                </div>
+                </div> : null}
                 <div className='auto-suggest'>
                     <div
-                        style={{ background: showPlaceholder ? 'transparent' : 'white' }}
                         ref={contentEditableDivRef} className={`__custom-autosuggest-block__`}
                         onKeyDown={handleKeyDown}
                         onKeyUp={handleKeyUp}
