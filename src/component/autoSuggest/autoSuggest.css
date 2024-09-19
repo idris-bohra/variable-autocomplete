@@ -20,7 +20,20 @@
 
     &:focus-within {
         border: 1px solid rgba(0, 0, 0, 0.57);
+
+        .auto-suggest {}
     }
+}
+
+.main__div:focus-within .auto-suggest {
+    overflow: unset !important;
+}
+
+.main__div:focus-within .auto-suggest .__custom-autosuggest-block__ {
+    overflow: visible !important;
+    height: fit-content;
+    background: rebeccapurple;
+    white-space: normal;
 }
 
 .auto-suggest {
