@@ -1,10 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SuggestionValueComponent from '../suggestionValueComponent/suggestionValueComponent';
 import './suggestionBox.css';
 
 export default function SuggestionBox(props) {
 
     const suggestionRefs = useRef([]);
+    const suggestionBoxRef = useRef();
+
+    const [caretPosition, setCaretPosition] = useState({ top: '', left: '' });
 
     useEffect(() => {
         if (suggestionRefs.current[props.suggestionIndex]) {
@@ -15,6 +18,17 @@ export default function SuggestionBox(props) {
             });
         }
     }, [props.suggestionIndex]);
+
+    useEffect(() => {
+        const bodyPos = { innerHeight: window.innerWidth, innerWidth: window.innerWidth };
+        const suggestionBoxWidth = suggestionBoxRef.current.getBoundingClientRect().width;
+        if (props?.caretPosition.left + suggestionBoxWidth >= (bodyPos.innerWidth - 10)) {
+            const extraWidth = (props?.caretPosition.left + suggestionBoxWidth) - bodyPos.innerWidth;
+            setCaretPosition({ top: props?.caretPosition?.top, left: props?.caretPosition?.left - extraWidth - 20 });
+            return;
+        }
+        setCaretPosition({ ...props?.caretPosition })
+    }, [props?.filteredSuggestions, props?.caretPosition]);
 
 
     const handleSuggestionHoverEvent = (index) => {
@@ -34,7 +48,7 @@ export default function SuggestionBox(props) {
 
     return (
         <React.Fragment>
-            {Object.keys(props?.filteredSuggestions || {})?.length > 0 && <div className="__suggestions__container__" style={{ top: `${props?.caretPosition.top}px`, left: `${props?.caretPosition.left}px` }}>
+            {Object.keys(props?.filteredSuggestions || {})?.length > 0 && <div ref={suggestionBoxRef} className="__suggestions__container__" style={{ top: `${caretPosition.top}px`, left: `${caretPosition.left}px` }}>
                 <div className='__main__suggestion__container__'>
                     {Object.keys(props?.filteredSuggestions).map((suggestion, index) => (
                         <div
