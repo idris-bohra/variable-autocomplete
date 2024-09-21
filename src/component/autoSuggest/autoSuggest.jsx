@@ -393,19 +393,21 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     return (
         <React.Fragment>
-            <div className={`main__div ${disable ? 'disable-div' : ''}`}>
-                {showPlaceholder && !disable ? <div className='placeholder-editable-div'>
-                    <span className='placeholder-text'>{placeholder}</span>
-                </div> : null}
-                <div className='auto-suggest'>
-                    <div
-                        ref={contentEditableDivRef} className={`__custom-autosuggest-block__`}
-                        onKeyDown={handleKeyDown}
-                        onKeyUp={handleKeyUp}
-                        contentEditable={disable === true ? false : true}
-                        onInput={handleContentChange}
-                        onPaste={handlePaste}
-                    >
+            <div className="parent-div">
+                <div className={`main__div ${disable ? 'disable-div' : ''}`}>
+                    {showPlaceholder && !disable ? <div className='placeholder-editable-div'>
+                        <span className='placeholder-text'>{placeholder}</span>
+                    </div> : null}
+                    <div className='auto-suggest'>
+                        <div
+                            ref={contentEditableDivRef} className={`__custom-autosuggest-block__`}
+                            onKeyDown={handleKeyDown}
+                            onKeyUp={handleKeyUp}
+                            contentEditable={disable === true ? false : true}
+                            onInput={handleContentChange}
+                            onPaste={handlePaste}
+                        >
+                        </div>
                     </div>
                 </div>
             </div>

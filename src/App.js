@@ -7,7 +7,7 @@ export default function App() {
   const [initial, setInitial] = useState('')
 
   useEffect(() => {
-    setInitial('<span variable-block="true">{{url}}</span><span text-block="true">/v2/company/</span><span variable-block="true">{{companyUniqueName}}</span><span text-block="true">/groups/</span><span variable-block="true">{{groupUniqueName}}</span><span text-block="true">/accounts/</span><span variable-block="true">{{accountUniqueName}}</span>')
+    // setInitial('<span variable-block="true">{{url}}</span><span text-block="true">/v2/company/</span><span variable-block="true">{{companyUniqueName}}</span><span text-block="true">/groups/</span><span variable-block="true">{{groupUniqueName}}</span><span text-block="true">/accounts/</span><span variable-block="true">{{accountUniqueName}}</span>')
   }, [])
   
 
