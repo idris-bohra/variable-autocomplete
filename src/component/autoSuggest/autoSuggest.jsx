@@ -324,10 +324,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
 
     const modifySelectedText = () => {
         const selection = window.getSelection();
-        if (!selection.rangeCount) {
-            return;
-        }
-
+        if (!selection.rangeCount) return;
         const range = selection.getRangeAt(0);
         const startNode = range.startContainer;
         const endNode = range.endContainer;
@@ -341,50 +338,46 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             const fullText = startNode.textContent;
             const modifiedText = fullText.substring(0, startOffset) + fullText.substring(endOffset);
             startNode.textContent = modifiedText;
-
             newCaretPositionNode = startNode;
             newCaretPositionOffset = startOffset;
-        } else {
+        }
+        else {
             let currentNode = startNode.parentNode.nextSibling;
             while (currentNode && currentNode !== endNode.parentNode) {
                 let nextNode = currentNode.nextSibling;
                 currentNode.parentNode.removeChild(currentNode);
                 currentNode = nextNode;
             }
-
             const startText = startNode.textContent;
             const modifiedStartText = startText.substring(0, startOffset);
             startNode.textContent = modifiedStartText;
-
             const endText = endNode.textContent;
             const modifiedEndText = endText.substring(endOffset);
             endNode.textContent = modifiedEndText;
-
             newCaretPositionNode = startNode;
             newCaretPositionOffset = startOffset;
         }
-        
-        selection.removeAllRanges();
 
         const newRange = document.createRange();
+        selection.removeAllRanges();
         newRange.setStart(newCaretPositionNode, newCaretPositionOffset);
         newRange.setEnd(newCaretPositionNode, newCaretPositionOffset);
-
         selection.addRange(newRange);
     };
 
-    
+
     const handlePaste = (event) => {
         event.preventDefault();
         const selection = window.getSelection();
         const range = selection.getRangeAt(0);
-        if(range.startOffset != range.endOffset){
+        if (range.startOffset != range.endOffset) {
             modifySelectedText();
-            if(contentEditableDivRef.current.innerText === ''){
+            if (contentEditableDivRef.current.innerText === '') {
                 let text = (event.clipboardData || window.clipboardData).getData('text');
                 if (!text || text.length === 0) return;
                 let html = convertTextToHTML(text);
                 contentEditableDivRef.current.innerHTML = html;
+                addEventListenersToVariableSpan();
                 return;
             }
         }
