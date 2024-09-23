@@ -4,9 +4,6 @@ import { suggestions } from './enums/suggestions';
 
 export default function App() {
   const contentEditableDivRef = useRef();
-  const contentEditableDivRef2 = useRef();
-  const contentEditableDivRef3 = useRef();
-  const contentEditableDivRef4 = useRef();
   const [initial, setInitial] = useState('')
 
   useEffect(() => {
