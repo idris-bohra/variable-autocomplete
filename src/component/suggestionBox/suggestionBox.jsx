@@ -21,7 +21,7 @@ export default function SuggestionBox(props) {
 
     useEffect(() => {
         const bodyPos = { innerHeight: window.innerWidth, innerWidth: window.innerWidth };
-        const suggestionBoxWidth = suggestionBoxRef.current.getBoundingClientRect().width;
+        const suggestionBoxWidth = suggestionBoxRef?.current?.getBoundingClientRect()?.width;
         if (props?.caretPosition.left + suggestionBoxWidth >= (bodyPos.innerWidth - 10)) {
             const extraWidth = (props?.caretPosition.left + suggestionBoxWidth) - bodyPos.innerWidth;
             setCaretPosition({ top: props?.caretPosition?.top, left: props?.caretPosition?.left - extraWidth - 20 });
