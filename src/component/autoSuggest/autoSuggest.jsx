@@ -307,9 +307,9 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
     const handleKeyUp = (event) => {
         const selection = window.getSelection();
         const currentNode = selection.anchorNode;
-        const parentNode = currentNode.parentNode;
+        const parentNode = currentNode?.parentNode;
 
-        if (event.key === '{' && currentNode.parentNode.getAttribute('text-block')) {
+        if (event.key === '{' && currentNode?.parentNode.getAttribute('text-block')) {
             const caretPosition = getCaretPosition();
             setCaretPosition(caretPosition);
             setShowTooltip(false);
@@ -317,14 +317,87 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
             setFilteredSuggestions(suggestions);
         }
 
-        if (!event.key.match(/^[\x20-\x7E]$/) && parentNode.getAttribute('variable-block')) {
+        if (!event.key.match(/^[\x20-\x7E]$/) && parentNode?.getAttribute('variable-block')) {
             event.preventDefault();
         }
     }
 
+    const modifySelectedText = () => {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) {
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        const startNode = range.startContainer;
+        const endNode = range.endContainer;
+        const startOffset = range.startOffset;
+        const endOffset = range.endOffset;
+
+        let newCaretPositionNode;
+        let newCaretPositionOffset;
+
+        if (startNode === endNode) {
+            const fullText = startNode.textContent;
+            const modifiedText = fullText.substring(0, startOffset) + fullText.substring(endOffset);
+            startNode.textContent = modifiedText;
+
+            newCaretPositionNode = startNode;
+            newCaretPositionOffset = startOffset;
+        } else {
+            let currentNode = startNode.parentNode.nextSibling;
+            while (currentNode && currentNode !== endNode.parentNode) {
+                let nextNode = currentNode.nextSibling;
+                currentNode.parentNode.removeChild(currentNode);
+                currentNode = nextNode;
+            }
+
+            const startText = startNode.textContent;
+            const modifiedStartText = startText.substring(0, startOffset);
+            startNode.textContent = modifiedStartText;
+
+            const endText = endNode.textContent;
+            const modifiedEndText = endText.substring(endOffset);
+            endNode.textContent = modifiedEndText;
+
+            newCaretPositionNode = startNode;
+            newCaretPositionOffset = startOffset;
+        }
+        
+        selection.removeAllRanges();
+
+        const newRange = document.createRange();
+        newRange.setStart(newCaretPositionNode, newCaretPositionOffset);
+        newRange.setEnd(newCaretPositionNode, newCaretPositionOffset);
+
+        selection.addRange(newRange);
+    };
+
+    
     const handlePaste = (event) => {
         event.preventDefault();
         const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        if(range.startOffset != range.endOffset){
+            modifySelectedText();
+            if(contentEditableDivRef.current.innerText === ''){
+                let text = (event.clipboardData || window.clipboardData).getData('text');
+                if (!text || text.length === 0) return;
+                let html = convertTextToHTML(text);
+                contentEditableDivRef.current.innerHTML = html;
+                return;
+            }
+        }
+        Array.from(contentEditableDivRef.current?.childNodes)?.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.getAttribute('text-block')) return;
+                if (!isEncodedWithCurlyBraces(node?.textContent)) {
+                    node.setAttribute('text-block', true);
+                    node.removeAttribute('variable-block');
+                }
+            }
+            removeAllEventListeners();
+        });
         const savedCaretPos = saveCaretPosition(contentEditableDivRef.current);
         const currentNode = selection?.anchorNode?.parentNode;
         if (!currentNode) return;

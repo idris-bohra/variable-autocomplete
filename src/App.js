@@ -4,9 +4,6 @@ import { suggestions } from './enums/suggestions';
 
 export default function App() {
   const contentEditableDivRef = useRef();
-  const contentEditableDivRef2 = useRef();
-  const contentEditableDivRef3 = useRef();
-  const contentEditableDivRef4 = useRef();
   const [initial, setInitial] = useState('')
 
   useEffect(() => {
@@ -17,9 +14,6 @@ export default function App() {
   return (
     <div style={{width:"99%" }}>
       <AutoSuggest suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef} placeholder={'Enter URL or paste curl'} />
-      <AutoSuggest suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef2} placeholder={'Enter URL or paste curl'} />
-      <AutoSuggest suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef3} placeholder={'Enter URL or paste curl'} />
-      <AutoSuggest suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef4} placeholder={'Enter URL or paste curl'} />
     </div>
   )
 }
