@@ -10,10 +10,13 @@ export default function App() {
     setInitial('<span variable-block="true">{{url}}</span><span text-block="true">/v2/company/</span><span variable-block="true">{{companyUniqueName}}</span><span text-block="true">/groups/</span><span variable-block="true">{{groupUniqueName}}</span><span text-block="true">/accounts/</span><span variable-block="true">{{accountUniqueName}}</span>')
   }, [])
   
+  const handleValueChange = ()=>{
+    console.log('ere')
+  }
 
   return (
     <div style={{width:"99%" }}>
-      <AutoSuggest suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef} placeholder={'Enter URL or paste curl'} />
+      <AutoSuggest handleValueChange={handleValueChange} suggestions={suggestions} initial={initial} contentEditableDivRef={contentEditableDivRef} placeholder={'Enter URL or paste curl'} />
     </div>
   )
 }

@@ -378,6 +378,7 @@ export default function AutoSuggest({ suggestions, contentEditableDivRef, initia
                 let html = convertTextToHTML(text);
                 contentEditableDivRef.current.innerHTML = html;
                 addEventListenersToVariableSpan();
+                handleValueChange && handleValueChange();
                 return;
             }
         }
